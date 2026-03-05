@@ -263,7 +263,7 @@ setTimeout(hideToggle, 1500);
 # ── LLM ───────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def get_llm():
-    return ChatGoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=1.0)
+    return ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=1.0)
 
 llm = get_llm()
 
