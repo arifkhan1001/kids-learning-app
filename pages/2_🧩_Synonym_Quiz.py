@@ -544,7 +544,11 @@ if not st.session_state.quiz_started:
                             st.session_state.quiz_done     = False
                             st.rerun()
                         except Exception as e:
-                            st.error(f"😬 Oops! Couldn't generate the quiz. Try again! ({e})")
+                            err_str = str(e)
+                            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                                st.error("😴 **Yawn!** I've played so many games today that my brain needs a quick 1-minute nap!\n\nStretch your arms, count to 60, and tap the level button to try again! 🌈")
+                            else:
+                                st.error(f"😬 Oops! Couldn't generate the quiz. Try again! ({e})")
 
     # Apply colors to the level buttons via JS
     apply_level_colors()

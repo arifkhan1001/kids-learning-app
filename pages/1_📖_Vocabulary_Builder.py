@@ -113,6 +113,10 @@ if learn_button:
                 st.markdown("---")
                 st.markdown("💪 **Great job exploring a new word today!** Come back tomorrow for another adventure! 🌈")
             except Exception as e:
-                st.error(f"😬 Uh oh! Something went a little wrong. Let's try again! (Error: {e})")
+                err_str = str(e)
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    st.error("😴 **Yawn!** My brain is taking a quick 1-minute nap because I answered too many questions!\n\nTake a deep breath, stretch your arms, and try asking me again in a minute! 🌈")
+                else:
+                    st.error(f"😬 Uh oh! Something went a little wrong. Let's try again! (Error: {e})")
     else:
         st.warning("🙈 Oops! You forgot to type a word! Try typing something in the box above. 😄")
