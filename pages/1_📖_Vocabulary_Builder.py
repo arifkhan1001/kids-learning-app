@@ -69,7 +69,7 @@ st.markdown("Type any word below and I'll explain it just for **YOU**! 🦄")
 
 @st.cache_resource
 def get_llm():
-    return ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.8)
+    return ChatGoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0.8)
 
 llm = get_llm()
 
