@@ -177,7 +177,7 @@ components.html("""
             }
             .stApp .encourage-text,
             .stApp .encourage-text * {
-                color: #718096 !important;
+                color: #1a202c !important;
             }
         `;
         d.head.appendChild(s);
