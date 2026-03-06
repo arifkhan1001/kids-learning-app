@@ -332,7 +332,26 @@ def _inject_js(code: str):
     components.html(f"<script>{code}</script>", height=0)
 
 CELEBRATIONS = [
-    # 0: FIREWORKS — colorful bursts from random positions
+    # 0: BALLOONS — colorful balloons rising up (first answer!)
+    """
+    (function(){
+        var d=window.parent.document;
+        for(var i=0;i<35;i++){
+            var b=d.createElement('div');
+            var size=35+Math.random()*40;
+            var left=Math.random()*100;
+            var dur=2500+Math.random()*2500;
+            var delay=Math.random()*1500;
+            var hue=Math.floor(Math.random()*360);
+            b.textContent='🎈';
+            b.style.cssText='position:fixed;left:'+left+'%;bottom:-60px;font-size:'+size+'px;z-index:99999;pointer-events:none;filter:hue-rotate('+hue+'deg);transition:bottom '+dur+'ms ease-out, opacity '+(dur*0.8)+'ms ease-in;opacity:0.9;';
+            d.body.appendChild(b);
+            setTimeout(function(el){el.style.bottom='110vh';el.style.opacity='0';}.bind(null,b),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,b),dur+2000);
+        }
+    })();
+    """,
+    # 1: FIREWORKS — colorful bursts from random positions
     """
     (function(){
         var d=window.parent.document, c=d.createElement('canvas');
@@ -387,28 +406,7 @@ CELEBRATIONS = [
         }
     })();
     """,
-    # 2: BALLOONS — colorful balloons rising up
-    """
-    (function(){
-        var d=window.parent.document;
-        var colors=['🎈','🟡','🔴','🟢','🔵','🟣','🟠'];
-        var balloonEmojis=['🎈','🎈','🎈','🎈','🎈'];
-        for(var i=0;i<25;i++){
-            var b=d.createElement('div');
-            var size=30+Math.random()*30;
-            var left=Math.random()*100;
-            var dur=2500+Math.random()*2500;
-            var delay=Math.random()*1500;
-            var hue=Math.floor(Math.random()*360);
-            b.textContent='🎈';
-            b.style.cssText='position:fixed;left:'+left+'%;bottom:-60px;font-size:'+size+'px;z-index:99999;pointer-events:none;filter:hue-rotate('+hue+'deg);transition:bottom '+dur+'ms ease-out, opacity '+(dur*0.8)+'ms ease-in;opacity:0.9;';
-            d.body.appendChild(b);
-            setTimeout(function(el){el.style.bottom='110vh';el.style.opacity='0';}.bind(null,b),50+delay);
-            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,b),dur+2000);
-        }
-    })();
-    """,
-    # 3: FLOWERS — petals and flowers drifting down
+    # 2: FLOWERS — petals and flowers drifting down
     """
     (function(){
         var d=window.parent.document;
@@ -716,6 +714,12 @@ if not st.session_state.quiz_started:
                 .stApp .section-label { color: rgba(255,255,255,0.9) !important; }
                 .stApp .score-banner { color: rgba(255,255,255,0.9) !important; }
                 .stApp .score-banner strong { color: #ffffff !important; }
+                .stApp .action-btn button,
+                .stApp .action-btn button p,
+                .stApp .action-btn button span { color: #ffffff !important; }
+                .stApp .restart-btn button,
+                .stApp .restart-btn button p,
+                .stApp .restart-btn button span { color: #1a202c !important; background: rgba(255,255,255,0.85) !important; }
             `;
             d.head.appendChild(s);
         }
