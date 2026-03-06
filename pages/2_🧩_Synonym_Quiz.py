@@ -327,33 +327,243 @@ LEVELS = {
 }
 
 
-# ── Celebration engine (subtle, professional) ────────────────────────────────
+# ── Celebration engine — diverse effects for each question ────────────────────
 def _inject_js(code: str):
     components.html(f"<script>{code}</script>", height=0)
 
-def celebrate(correct_count: int):
-    """Subtle celebration — soft confetti dots falling from top."""
-    _inject_js("""
-    (function() {
-        var d = window.parent.document;
-        var colors = ['#5a67d8','#48bb78','#ecc94b','#ed8936','#9f7aea','#fc8181','#4fd1c5'];
-        for (var i = 0; i < 40; i++) {
-            var dot = d.createElement('div');
-            var left = Math.random() * 100;
-            var size = 4 + Math.random() * 6;
-            var dur = 1200 + Math.random() * 1200;
-            var delay = Math.random() * 600;
-            var color = colors[Math.floor(Math.random() * colors.length)];
-            dot.style.cssText = 'position:fixed;left:'+left+'%;top:-20px;'
-                +'width:'+size+'px;height:'+size+'px;border-radius:50%;'
-                +'background:'+color+';z-index:99999;pointer-events:none;opacity:0.85;'
-                +'transition:top '+dur+'ms ease-in, opacity '+(dur*0.8)+'ms ease-in;';
-            d.body.appendChild(dot);
-            setTimeout(function(el){ el.style.top='105vh'; el.style.opacity='0'; }.bind(null,dot), 50+delay);
-            setTimeout(function(el){ if(el.parentNode) el.parentNode.removeChild(el); }.bind(null,dot), dur+800);
+CELEBRATIONS = [
+    # 0: FIREWORKS — colorful bursts from random positions
+    """
+    (function(){
+        var d=window.parent.document, c=d.createElement('canvas');
+        c.id='fw_canvas'; c.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;pointer-events:none;';
+        d.body.appendChild(c); var ctx=c.getContext('2d');
+        c.width=window.innerWidth; c.height=window.innerHeight;
+        var particles=[];
+        var colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6fb6','#c792ea','#45f3ff'];
+        for(var b=0;b<6;b++){
+            var bx=Math.random()*c.width,by=Math.random()*c.height*0.5;
+            for(var i=0;i<40;i++){
+                var angle=Math.random()*Math.PI*2, speed=2+Math.random()*6;
+                particles.push({x:bx,y:by,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,
+                    life:60+Math.random()*40,age:0,color:colors[Math.floor(Math.random()*colors.length)],
+                    size:3+Math.random()*5});
+            }
+        }
+        var frame=0;
+        function anim(){
+            ctx.clearRect(0,0,c.width,c.height);
+            var alive=false;
+            particles.forEach(function(p){
+                p.age++; if(p.age>p.life) return;
+                alive=true; p.x+=p.vx; p.y+=p.vy; p.vy+=0.08;
+                var alpha=1-p.age/p.life;
+                ctx.beginPath(); ctx.arc(p.x,p.y,p.size*alpha,0,Math.PI*2);
+                ctx.fillStyle=p.color; ctx.globalAlpha=alpha; ctx.fill();
+            });
+            ctx.globalAlpha=1;
+            if(alive&&frame<180){frame++;requestAnimationFrame(anim);}
+            else{c.remove();}
+        }
+        anim();
+    })();
+    """,
+    # 1: SNOWFLAKES — big white flakes drifting down
+    """
+    (function(){
+        var d=window.parent.document;
+        var flakes=['❄','❅','❆','✦','✧'];
+        for(var i=0;i<35;i++){
+            var s=d.createElement('div');
+            var size=16+Math.random()*28;
+            var left=Math.random()*100;
+            var dur=2000+Math.random()*3000;
+            var delay=Math.random()*1500;
+            s.textContent=flakes[Math.floor(Math.random()*flakes.length)];
+            s.style.cssText='position:fixed;left:'+left+'%;top:-40px;font-size:'+size+'px;z-index:99999;pointer-events:none;opacity:0.85;color:#fff;text-shadow:0 0 8px #b3e0ff;transition:top '+dur+'ms ease-in, opacity '+(dur*0.8)+'ms ease-in;';
+            d.body.appendChild(s);
+            setTimeout(function(el){el.style.top='105vh';el.style.opacity='0';}.bind(null,s),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,s),dur+2000);
         }
     })();
-    """)
+    """,
+    # 2: BALLOONS — colorful balloons rising up
+    """
+    (function(){
+        var d=window.parent.document;
+        var colors=['🎈','🟡','🔴','🟢','🔵','🟣','🟠'];
+        var balloonEmojis=['🎈','🎈','🎈','🎈','🎈'];
+        for(var i=0;i<25;i++){
+            var b=d.createElement('div');
+            var size=30+Math.random()*30;
+            var left=Math.random()*100;
+            var dur=2500+Math.random()*2500;
+            var delay=Math.random()*1500;
+            var hue=Math.floor(Math.random()*360);
+            b.textContent='🎈';
+            b.style.cssText='position:fixed;left:'+left+'%;bottom:-60px;font-size:'+size+'px;z-index:99999;pointer-events:none;filter:hue-rotate('+hue+'deg);transition:bottom '+dur+'ms ease-out, opacity '+(dur*0.8)+'ms ease-in;opacity:0.9;';
+            d.body.appendChild(b);
+            setTimeout(function(el){el.style.bottom='110vh';el.style.opacity='0';}.bind(null,b),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,b),dur+2000);
+        }
+    })();
+    """,
+    # 3: FLOWERS — petals and flowers drifting down
+    """
+    (function(){
+        var d=window.parent.document;
+        var flowers=['🌸','🌺','🌼','🌻','🌷','💐','🌹','🏵️'];
+        for(var i=0;i<30;i++){
+            var f=d.createElement('div');
+            var size=18+Math.random()*26;
+            var left=Math.random()*100;
+            var dur=2000+Math.random()*2500;
+            var delay=Math.random()*1200;
+            var rot=Math.random()*360;
+            f.textContent=flowers[Math.floor(Math.random()*flowers.length)];
+            f.style.cssText='position:fixed;left:'+left+'%;top:-50px;font-size:'+size+'px;z-index:99999;pointer-events:none;opacity:0.9;transform:rotate('+rot+'deg);transition:top '+dur+'ms ease-in, opacity '+(dur*0.8)+'ms ease-in;';
+            d.body.appendChild(f);
+            setTimeout(function(el){el.style.top='105vh';el.style.opacity='0';}.bind(null,f),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,f),dur+2000);
+        }
+    })();
+    """,
+    # 4: THUNDERSTORM — lightning flashes with thunder emoji rain
+    """
+    (function(){
+        var d=window.parent.document;
+        var overlay=d.createElement('div');
+        overlay.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99998;pointer-events:none;background:transparent;';
+        d.body.appendChild(overlay);
+        var flashes=[200,600,800,1400,1800];
+        flashes.forEach(function(t){
+            setTimeout(function(){
+                overlay.style.background='rgba(255,255,255,0.7)';
+                setTimeout(function(){overlay.style.background='transparent';},100);
+            },t);
+        });
+        setTimeout(function(){overlay.remove();},3000);
+        var emojis=['⚡','🌩️','⛈️','💨','🌊'];
+        for(var i=0;i<20;i++){
+            var e=d.createElement('div');
+            var size=22+Math.random()*24;
+            var left=Math.random()*100;
+            var dur=1500+Math.random()*2000;
+            var delay=Math.random()*1500;
+            e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+            e.style.cssText='position:fixed;left:'+left+'%;top:-40px;font-size:'+size+'px;z-index:99999;pointer-events:none;opacity:0.85;transition:top '+dur+'ms ease-in, opacity '+(dur*0.7)+'ms ease-in;';
+            d.body.appendChild(e);
+            setTimeout(function(el){el.style.top='105vh';el.style.opacity='0';}.bind(null,e),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,e),dur+2000);
+        }
+    })();
+    """,
+    # 5: RAINBOW RAIN — colored drops falling
+    """
+    (function(){
+        var d=window.parent.document;
+        var rainbow=['#ff0000','#ff7700','#ffdd00','#00cc00','#0077ff','#8800ff','#ff00aa'];
+        for(var i=0;i<50;i++){
+            var drop=d.createElement('div');
+            var left=Math.random()*100;
+            var w=3+Math.random()*5;
+            var h=12+Math.random()*20;
+            var dur=1000+Math.random()*2000;
+            var delay=Math.random()*1500;
+            var color=rainbow[Math.floor(Math.random()*rainbow.length)];
+            drop.style.cssText='position:fixed;left:'+left+'%;top:-30px;width:'+w+'px;height:'+h+'px;border-radius:'+w+'px;background:'+color+';z-index:99999;pointer-events:none;opacity:0.7;transition:top '+dur+'ms linear, opacity '+(dur*0.8)+'ms ease-in;';
+            d.body.appendChild(drop);
+            setTimeout(function(el){el.style.top='105vh';el.style.opacity='0';}.bind(null,drop),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,drop),dur+2000);
+        }
+    })();
+    """,
+    # 6: STARS — shooting stars and sparkles
+    """
+    (function(){
+        var d=window.parent.document;
+        var stars=['⭐','🌟','✨','💫','🌠','⚡'];
+        for(var i=0;i<30;i++){
+            var s=d.createElement('div');
+            var size=18+Math.random()*28;
+            var left=Math.random()*100;
+            var dur=1500+Math.random()*2000;
+            var delay=Math.random()*1200;
+            s.textContent=stars[Math.floor(Math.random()*stars.length)];
+            s.style.cssText='position:fixed;left:'+left+'%;top:-40px;font-size:'+size+'px;z-index:99999;pointer-events:none;opacity:0.9;transition:top '+dur+'ms ease-in, left 0.5s ease, opacity '+(dur*0.8)+'ms ease-in;';
+            d.body.appendChild(s);
+            setTimeout(function(el,l){el.style.top='105vh';el.style.left=(l+Math.random()*10-5)+'%';el.style.opacity='0';}.bind(null,s,left),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,s),dur+2000);
+        }
+    })();
+    """,
+    # 7: HEARTS — red and pink hearts rising
+    """
+    (function(){
+        var d=window.parent.document;
+        var hearts=['❤️','💖','💗','💕','💝','💘','💓','🩷'];
+        for(var i=0;i<28;i++){
+            var h=d.createElement('div');
+            var size=20+Math.random()*30;
+            var left=Math.random()*100;
+            var dur=2000+Math.random()*2500;
+            var delay=Math.random()*1500;
+            h.textContent=hearts[Math.floor(Math.random()*hearts.length)];
+            h.style.cssText='position:fixed;left:'+left+'%;bottom:-50px;font-size:'+size+'px;z-index:99999;pointer-events:none;opacity:0.85;transition:bottom '+dur+'ms ease-out, opacity '+(dur*0.7)+'ms ease-in;';
+            d.body.appendChild(h);
+            setTimeout(function(el){el.style.bottom='110vh';el.style.opacity='0';}.bind(null,h),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,h),dur+2000);
+        }
+    })();
+    """,
+    # 8: BUBBLES — translucent circles rising
+    """
+    (function(){
+        var d=window.parent.document;
+        var colors=['rgba(100,180,255,0.5)','rgba(180,100,255,0.4)','rgba(100,255,200,0.4)','rgba(255,180,100,0.4)','rgba(255,100,180,0.4)'];
+        for(var i=0;i<30;i++){
+            var b=d.createElement('div');
+            var size=20+Math.random()*50;
+            var left=Math.random()*100;
+            var dur=2500+Math.random()*2500;
+            var delay=Math.random()*1500;
+            var color=colors[Math.floor(Math.random()*colors.length)];
+            b.style.cssText='position:fixed;left:'+left+'%;bottom:-60px;width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';border:2px solid rgba(255,255,255,0.6);z-index:99999;pointer-events:none;transition:bottom '+dur+'ms ease-out, opacity '+(dur*0.7)+'ms ease-in;opacity:0.8;';
+            d.body.appendChild(b);
+            setTimeout(function(el){el.style.bottom='110vh';el.style.opacity='0';}.bind(null,b),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,b),dur+2000);
+        }
+    })();
+    """,
+    # 9: SPARKLE BURST — big emoji explosion from center
+    """
+    (function(){
+        var d=window.parent.document;
+        var emojis=['🎉','🎊','🥳','🏆','👏','💯','🔥','✅','🙌','👑'];
+        var cx=window.innerWidth/2, cy=window.innerHeight/2;
+        for(var i=0;i<35;i++){
+            var e=d.createElement('div');
+            var size=22+Math.random()*30;
+            var angle=Math.random()*Math.PI*2;
+            var dist=100+Math.random()*300;
+            var dur=1500+Math.random()*1500;
+            var delay=Math.random()*400;
+            e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+            e.style.cssText='position:fixed;left:'+cx+'px;top:'+cy+'px;font-size:'+size+'px;z-index:99999;pointer-events:none;opacity:1;transition:left '+dur+'ms ease-out, top '+dur+'ms ease-out, opacity '+(dur*0.8)+'ms ease-in;';
+            d.body.appendChild(e);
+            var fx=cx+Math.cos(angle)*dist;
+            var fy=cy+Math.sin(angle)*dist;
+            setTimeout(function(el,x,y){el.style.left=x+'px';el.style.top=y+'px';el.style.opacity='0';}.bind(null,e,fx,fy),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,e),dur+2000);
+        }
+    })();
+    """,
+]
+
+def celebrate(correct_count: int):
+    """Pick a different celebration effect for each question."""
+    effect_index = correct_count % len(CELEBRATIONS)
+    _inject_js(CELEBRATIONS[effect_index])
 
 
 # ── Session state ────────────────────────────────────────────────────────────
@@ -479,28 +689,33 @@ if not st.session_state.quiz_started:
             var s = d.createElement('style');
             s.id = 'quiz-style-fix';
             s.textContent = `
+                /* Force dark text inside white cards */
+                .stApp .question-card,
+                .stApp .question-card *,
+                .stApp .feedback-correct,
+                .stApp .feedback-correct *,
+                .stApp .feedback-wrong,
+                .stApp .feedback-wrong *,
+                .stApp .end-card,
+                .stApp .end-card *,
                 .stApp .how-to-play,
-                .stApp .how-to-play *,
+                .stApp .how-to-play * {
+                    color: inherit !important;
+                }
+                .stApp .question-card { color: #1a202c !important; }
+                .stApp .feedback-correct { color: #276749 !important; }
+                .stApp .feedback-wrong { color: #9b2c2c !important; }
+                .stApp .end-card { color: #1a202c !important; }
+                .stApp .end-headline { color: #1a202c !important; }
+                .stApp .end-score { color: #5a67d8 !important; }
+                .stApp .end-msg { color: #718096 !important; }
+                .stApp .how-to-play,
                 .stApp .how-to-play li,
                 .stApp .how-to-play ul,
-                .stApp .how-to-play p,
-                .stApp .how-to-play span,
-                .stApp .how-to-play strong {
-                    color: #4a5568 !important;
-                }
-                .stApp .restart-btn button,
-                .stApp .restart-btn button p,
-                .stApp .restart-btn button span {
-                    background: rgba(255,255,255,0.9) !important;
-                    color: #4a5568 !important;
-                    border: 1px solid rgba(255,255,255,0.5) !important;
-                    border-radius: 10px !important;
-                    font-size: 0.85rem !important;
-                    font-weight: 500 !important;
-                }
-                .stApp .restart-btn button:hover {
-                    background: #ffffff !important;
-                }
+                .stApp .how-to-play strong { color: #4a5568 !important; }
+                .stApp .section-label { color: rgba(255,255,255,0.9) !important; }
+                .stApp .score-banner { color: rgba(255,255,255,0.9) !important; }
+                .stApp .score-banner strong { color: #ffffff !important; }
             `;
             d.head.appendChild(s);
         }
