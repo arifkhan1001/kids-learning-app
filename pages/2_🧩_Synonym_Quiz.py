@@ -7,430 +7,356 @@ import random
 
 load_dotenv()
 
-st.set_page_config(page_title="Synonym Quiz", page_icon="🧩", layout="centered")
+st.set_page_config(page_title="Synonym Quiz", page_icon="📝", layout="centered")
 
-# ── CSS ───────────────────────────────────────────────────────────────────────
+# ── Modern CSS ───────────────────────────────────────────────────────────────
 st.markdown("""
-    <style>
-        .stApp {
-            background: linear-gradient(135deg, #e0f7fa 0%, #ede7f6 55%, #fff9c4 100%);
-        }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    /* ── Base ── */
+    .stApp {
+        background: linear-gradient(160deg, #7c3aed 0%, #6366f1 25%, #3b82f6 50%, #06b6d4 75%, #14b8a6 100%) !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    .stApp, .stApp p, .stApp span, .stApp div,
+    .stApp label, .stApp li, .stMarkdown p {
+        color: #ffffff !important;
+        font-family: 'Inter', sans-serif !important;
+    }
 
-        /* ── Sidebar ── */
-        section[data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #ede7f6 0%, #e8eaf6 100%) !important;
-            border-right: 2px solid #b39ddb;
-        }
-        section[data-testid="stSidebar"] * {
-            color: #1a1a2e !important;
-            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive !important;
-        }
-        section[data-testid="stSidebar"] a { color: #6a0dad !important; font-weight: bold; }
-        section[data-testid="stSidebar"] a:hover { color: #4527a0 !important; }
+    /* ── Sidebar ── */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #ede9fe 0%, #e0f2fe 50%, #ccfbf1 100%) !important;
+        border-right: none;
+    }
+    section[data-testid="stSidebar"] * {
+        color: #4a5568 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    section[data-testid="stSidebar"] a { color: #6d28d9 !important; font-weight: 600; }
+    section[data-testid="stSidebar"] a:hover { color: #4c1d95 !important; }
+    button[data-testid="collapsedControl"] { display: none !important; }
 
-        /* ── Fix #1: Nuke the sidebar collapse toggle completely ── */
-        [data-testid="collapsedControl"],
-        button[data-testid="collapsedControl"],
-        [data-testid="baseButton-headerNoPadding"] {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
-            overflow: hidden !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            border: none !important;
-            pointer-events: none !important;
-            position: absolute !important;
-            visibility: hidden !important;
-        }
+    /* ── Hide top bar ── */
+    header[data-testid="stHeader"] { background: transparent !important; }
 
-        /* ── Global text ── */
-        .stApp, .stApp p, .stApp span, .stApp div,
-        .stApp label, .stApp li, .stMarkdown p { color: #1a1a2e !important; }
-        h1 {
-            font-size: 2.6rem !important; text-align: center; color: #6a0dad !important;
-            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive !important;
-            text-shadow: 2px 3px 0px #d1c4e9; margin-bottom: 0 !important;
-        }
-        h2, h3, h4 { color: #4527a0 !important; font-family: 'Comic Sans MS', 'Chalkboard SE', cursive !important; }
+    /* ── Narrow sidebar ── */
+    section[data-testid="stSidebar"] { width: 180px !important; min-width: 180px !important; }
+    section[data-testid="stSidebar"] > div { width: 180px !important; }
 
-        /* ── Level badge pill ── */
-        .level-easy   { background: #c8e6c9; color: #1b5e20 !important; border: 2px solid #43a047; }
-        .level-medium { background: #fff9c4; color: #e65100 !important; border: 2px solid #fbc02d; }
-        .level-hard   { background: #ffcdd2; color: #b71c1c !important; border: 2px solid #e53935; }
-        .level-badge {
-            display: inline-block; border-radius: 20px; padding: 5px 20px;
-            font-family: 'Comic Sans MS', cursive; font-weight: bold; font-size: 1rem;
-            margin-bottom: 0.8rem;
-        }
+    /* ── Push content to top ── */
+    .block-container { padding-top: 1rem !important; }
 
-        /* ── Section heading centred ── */
-        .section-heading {
-            text-align: center; font-size: 1.4rem; font-weight: bold;
-            color: #4527a0 !important; font-family: 'Comic Sans MS', cursive;
-            margin: 0.5rem 0 1rem 0;
-        }
+    /* ── Page Header ── */
+    .page-header {
+        text-align: center; padding: 0.2rem 0 0.3rem 0;
+    }
+    .page-header h1 {
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 700 !important; font-size: 2rem !important;
+        color: #ffffff !important; letter-spacing: -0.02em;
+        margin-bottom: 0.2rem;
+    }
+    .page-subtitle {
+        font-size: 1rem; color: rgba(255,255,255,0.85) !important;
+        font-weight: 400; margin-bottom: 1rem;
+    }
+    .section-label {
+        font-size: 0.95rem; font-weight: 600; color: rgba(255,255,255,0.9) !important;
+        font-family: 'Inter', sans-serif; margin-bottom: 0.5rem;
+    }
 
-        /* ── Default button style (level cards + answer tiles) ── */
-        .stButton > button {
-            background: #ffffff !important; color: #1a1a2e !important;
-            font-size: 1.2rem !important; font-family: 'Comic Sans MS', cursive !important;
-            font-weight: bold !important; border: 3px solid #b39ddb !important;
-            border-radius: 22px !important; padding: 18px 10px !important;
-            min-height: 90px !important; width: 100%;
-            white-space: pre-wrap !important; line-height: 1.6 !important;
-            text-align: center !important;
-            transition: background 0.15s ease, transform 0.12s ease, border-color 0.15s ease;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.1); margin-bottom: 8px;
-        }
-        .stButton > button:hover {
-            border-color: #7c4dff !important; transform: scale(1.04);
-        }
+    /* ── Answer Tiles ── */
+    .stButton > button {
+        background: rgba(255,255,255,0.9) !important;
+        color: #2d3748 !important;
+        font-size: 1.05rem !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 500 !important;
+        border: 1.5px solid rgba(139,92,246,0.15) !important;
+        border-radius: 14px !important;
+        padding: 18px 16px !important;
+        min-height: 70px !important;
+        width: 100%;
+        text-align: center !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        box-shadow: 0 2px 8px rgba(139,92,246,0.06);
+        margin-bottom: 8px;
+    }
+    .stButton > button:hover {
+        border-color: #8b5cf6 !important;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(139,92,246,0.15);
+        background: rgba(255,255,255,1) !important;
+    }
 
-        /* ── Fix #4: Level tile colours via column position in 3rd horizontal block ──
-           The start screen renders 3 stHorizontalBlocks:
-             1st = title + restart button
-             2nd = name input columns
-             3rd = level cards  ← target this one
-           st.stop() means quiz elements never enter the DOM on the start screen.
-        ── */
-        [data-testid="stHorizontalBlock"]:nth-of-type(3)
-            [data-testid="column"]:nth-child(1) .stButton > button {
-            background: #c8e6c9 !important;
-            border-color: #43a047 !important;
-            color: #1b5e20 !important;
-            font-size: 1.6rem !important;
-            font-weight: 900 !important;
-        }
-        [data-testid="stHorizontalBlock"]:nth-of-type(3)
-            [data-testid="column"]:nth-child(2) .stButton > button {
-            background: #fff9c4 !important;
-            border-color: #fbc02d !important;
-            color: #e65100 !important;
-            font-size: 1.6rem !important;
-            font-weight: 900 !important;
-        }
-        [data-testid="stHorizontalBlock"]:nth-of-type(3)
-            [data-testid="column"]:nth-child(3) .stButton > button {
-            background: #ffcdd2 !important;
-            border-color: #e53935 !important;
-            color: #b71c1c !important;
-            font-size: 1.6rem !important;
-            font-weight: 900 !important;
-        }
-        [data-testid="stHorizontalBlock"]:nth-of-type(3)
-            [data-testid="column"]:nth-child(1) .stButton > button:hover {
-            background: #a5d6a7 !important; transform: scale(1.06);
-        }
-        [data-testid="stHorizontalBlock"]:nth-of-type(3)
-            [data-testid="column"]:nth-child(2) .stButton > button:hover {
-            background: #fff176 !important; transform: scale(1.06);
-        }
-        [data-testid="stHorizontalBlock"]:nth-of-type(3)
-            [data-testid="column"]:nth-child(3) .stButton > button:hover {
-            background: #ef9a9a !important; transform: scale(1.06);
-        }
+    /* ── Level Cards ── */
+    .level-card {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1.5px solid #e2e8f0;
+        padding: 20px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        min-height: 110px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+    }
+    .level-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+    }
+    .level-card.easy {
+        border-left: 4px solid #48bb78;
+    }
+    .level-card.medium {
+        border-left: 4px solid #ecc94b;
+    }
+    .level-card.hard {
+        border-left: 4px solid #fc8181;
+    }
+    .level-name { font-weight: 600; font-size: 1.1rem; color: #1a202c; }
+    .level-desc { font-size: 0.82rem; color: #a0aec0; margin-top: 4px; }
 
-        /* ── Big action buttons (next / play again) ── */
-        .big-btn > div > button {
-            background: linear-gradient(90deg, #ffca28, #ff7043) !important;
-            color: #1a1a2e !important; font-size: 1.2rem !important;
-            font-family: 'Comic Sans MS', cursive !important; border-radius: 30px !important;
-            border: none !important; padding: 12px 40px !important; font-weight: bold !important;
-            box-shadow: 0 4px 14px rgba(255,112,67,0.35);
-            min-height: auto !important; width: auto !important;
-        }
-        .big-btn > div > button:hover { transform: scale(1.07) !important; }
+    /* ── Level buttons — base override for colored buttons ── */
+    .level-btn-easy .stButton > button,
+    button[kind="secondary"] { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 
-        /* ── Small restart button ── */
-        .small-restart > div > button {
-            background: #ede7f6 !important; color: #4527a0 !important;
-            font-size: 0.8rem !important; font-family: 'Comic Sans MS', cursive !important;
-            border-radius: 20px !important; border: 2px solid #b39ddb !important;
-            padding: 4px 14px !important; font-weight: bold !important;
-            min-height: 32px !important; width: auto !important; box-shadow: none;
-        }
-        .small-restart > div > button:hover {
-            background: #d1c4e9 !important; border-color: #7c4dff !important;
-            transform: scale(1.05) !important;
-        }
+    /* ── Primary action buttons ── */
+    .action-btn > div > button {
+        background: linear-gradient(135deg, #7c3aed, #6366f1) !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 14px 28px !important;
+        font-size: 1rem !important;
+        box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .action-btn > div > button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 28px rgba(124,58,237,0.4);
+        background: linear-gradient(135deg, #6d28d9, #4f46e5) !important;
+    }
 
-        /* ── Teal change-level button ── */
-        .refresh-btn > div > button {
-            background: linear-gradient(90deg, #26c6da, #00897b) !important;
-            color: #ffffff !important; font-size: 1rem !important;
-            font-family: 'Comic Sans MS', cursive !important; border-radius: 30px !important;
-            border: none !important; padding: 8px 24px !important; font-weight: bold !important;
-            min-height: auto !important; width: auto !important;
-        }
-        .refresh-btn > div > button:hover { transform: scale(1.05) !important; }
+    /* ── Restart btn ── */
+    .restart-btn > div > button {
+        background: rgba(255,255,255,0.9) !important;
+        color: #4a5568 !important;
+        border: 1.5px solid rgba(255,255,255,0.5) !important;
+        border-radius: 10px !important;
+        padding: 6px 16px !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        min-height: 36px !important;
+        box-shadow: none !important;
+    }
+    .restart-btn > div > button:hover {
+        border-color: #cbd5e0 !important;
+        background: #ffffff !important;
+    }
 
-        /* ── Name input ── */
-        .stTextInput > div > div > input {
-            border-radius: 20px !important; border: 3px solid #7c4dff !important;
-            font-size: 1.2rem !important; padding: 12px 20px !important;
-            background-color: #ffffff !important; color: #1a1a2e !important;
-            font-family: 'Comic Sans MS', cursive !important;
-        }
-        .stTextInput > div > div > input::placeholder { color: #9e9e9e !important; }
-        .stTextInput label {
-            font-size: 1.05rem !important; font-weight: bold;
-            color: #4527a0 !important; font-family: 'Comic Sans MS', cursive !important;
-        }
+    /* ── Input ── */
+    .stTextInput > div > div > input {
+        border-radius: 12px !important;
+        border: 1.5px solid #e2e8f0 !important;
+        font-size: 1rem !important;
+        padding: 12px 18px !important;
+        background-color: #ffffff !important;
+        color: #2d3748 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    .stTextInput > div > div > input:focus {
+        border-color: #5a67d8 !important;
+        box-shadow: 0 0 0 3px rgba(90,103,216,0.1) !important;
+    }
+    .stTextInput > div > div > input::placeholder { color: #a0aec0 !important; }
 
-        /* ── Score banner ── */
-        .score-banner {
-            background: linear-gradient(90deg, #7c4dff, #448aff);
-            border-radius: 18px; padding: 14px 28px; text-align: center;
-            color: #ffffff !important; font-size: 1.25rem;
-            font-family: 'Comic Sans MS', cursive; font-weight: bold;
-            box-shadow: 0 4px 16px rgba(124,77,255,0.3); margin-bottom: 1.2rem;
-        }
+    /* ── Score banner ── */
+    .score-banner {
+        background: linear-gradient(135deg, #7c3aed, #3b82f6, #06b6d4);
+        border: none;
+        border-radius: 14px;
+        padding: 14px 24px;
+        text-align: center;
+        color: rgba(255,255,255,0.9) !important;
+        font-size: 0.95rem;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        box-shadow: 0 4px 16px rgba(124,58,237,0.2);
+        margin-bottom: 1rem;
+    }
+    .score-banner strong { color: #ffffff; }
 
-        /* ── Question card ── */
-        .question-card {
-            background: #fffde7; border-radius: 22px; border: 3px solid #7c4dff;
-            padding: 28px 36px; font-size: 1.5rem; font-weight: bold;
-            color: #1a1a2e !important; font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
-            text-align: center; box-shadow: 0 4px 18px rgba(124,77,255,0.15);
-            margin-bottom: 1.8rem;
-        }
+    /* ── Question card ── */
+    .question-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 28px 32px;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1a202c !important;
+        font-family: 'Inter', sans-serif;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        margin-bottom: 1.5rem;
+    }
+    .question-card u { text-decoration-color: #5a67d8; text-underline-offset: 4px; }
 
-        /* ── Feedback boxes ── */
-        .feedback-correct {
-            background: #e8f5e9; border: 3px solid #43a047; border-radius: 18px;
-            padding: 18px 24px; color: #1b5e20 !important; font-size: 1.1rem;
-            font-family: 'Comic Sans MS', cursive; margin-top: 1rem; line-height: 1.7;
-        }
-        .feedback-wrong {
-            background: #fce4ec; border: 3px solid #e53935; border-radius: 18px;
-            padding: 18px 24px; color: #b71c1c !important; font-size: 1.1rem;
-            font-family: 'Comic Sans MS', cursive; margin-top: 1rem;
-        }
+    /* ── Feedback ── */
+    .feedback-correct {
+        background: #f0fff4;
+        border: 1px solid #c6f6d5;
+        border-radius: 14px;
+        padding: 18px 24px;
+        color: #276749 !important;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        margin-top: 1rem;
+    }
+    .feedback-wrong {
+        background: #fff5f5;
+        border: 1px solid #fed7d7;
+        border-radius: 14px;
+        padding: 18px 24px;
+        color: #9b2c2c !important;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        margin-top: 1rem;
+    }
 
-        /* ── How to play box ── */
-        .how-to-play {
-            background: #f3e5f5; border-radius: 18px; border: 2px dashed #b39ddb;
-            padding: 16px 24px; margin-top: 1rem;
-            font-family: 'Comic Sans MS', cursive; font-size: 1rem;
-            color: #1a1a2e !important;
-        }
-        .how-to-play li { margin-bottom: 6px; color: #1a1a2e !important; }
+    /* ── End screen ── */
+    .end-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 40px 32px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        margin: 1rem auto;
+        max-width: 480px;
+    }
+    .end-headline {
+        font-size: 1.6rem; font-weight: 700; color: #1a202c;
+        margin-bottom: 8px;
+    }
+    .end-score {
+        font-size: 2.5rem; font-weight: 700; color: #5a67d8;
+        margin: 12px 0;
+    }
+    .end-msg {
+        font-size: 1rem; color: #718096; font-weight: 400;
+        margin-top: 8px;
+    }
+    .level-badge {
+        display: inline-block; font-size: 0.8rem; font-weight: 600;
+        padding: 4px 14px; border-radius: 20px;
+    }
+    .badge-easy   { background: #c6f6d5; color: #276749; }
+    .badge-medium { background: #fefcbf; color: #975a16; }
+    .badge-hard   { background: #fed7d7; color: #9b2c2c; }
 
-        /* ── End screen ── */
-        .end-card {
-            background: linear-gradient(135deg, #e8eaf6, #fff9c4);
-            border-radius: 24px; border: 3px solid #7c4dff; padding: 2.5rem;
-            text-align: center; font-family: 'Comic Sans MS', cursive;
-            box-shadow: 0 6px 24px rgba(124,77,255,0.2);
-        }
-        .end-score { font-size: 3.5rem; font-weight: bold; color: #6a0dad !important; }
-        .end-name  { font-size: 2rem; color: #4527a0 !important; font-weight: bold; margin-bottom: 0.3rem; }
-        .end-msg   { font-size: 1.25rem; color: #4527a0 !important; margin-top: 0.5rem; }
+    /* ── How to play ── */
+    .how-to-play {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 20px 28px;
+        margin-top: 1rem;
+        font-size: 0.92rem;
+        line-height: 1.8;
+        color: #4a5568 !important;
+    }
+    .how-to-play, .how-to-play * {
+        color: #4a5568 !important;
+    }
+    .how-to-play ul { padding-left: 18px; }
+    .how-to-play li { margin-bottom: 4px; }
 
-        hr { border: none; border-top: 2px dashed #b39ddb; margin: 1rem 0; }
-        .stAlert p { color: #1a1a2e !important; }
-        footer { visibility: hidden; }
-    </style>
+    /* ── Progress bar ── */
+    .stProgress > div > div > div > div {
+        background: #5a67d8 !important;
+        border-radius: 999px;
+    }
+
+    hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.2rem 0; }
+    .stAlert p { color: #2d3748 !important; }
+    footer { visibility: hidden; }
+</style>
 """, unsafe_allow_html=True)
 
-# ── Fix #1 also via JS (belt-and-braces) ─────────────────────────────────────
-components.html("""
-<script>
-function hideToggle() {
-    try {
-        var d = window.parent.document;
-        // Hide by data-testid
-        ['collapsedControl','baseButton-headerNoPadding'].forEach(function(id) {
-            var el = d.querySelector('[data-testid="'+id+'"]');
-            if (el) { el.style.display='none'; el.style.visibility='hidden'; }
-        });
-        // Hide any button whose icon text contains 'keyboard_double'
-        d.querySelectorAll('button').forEach(function(btn) {
-            if (btn.textContent.indexOf('keyboard_double') > -1) {
-                btn.style.display='none';
-            }
-        });
-    } catch(e) {}
-}
-hideToggle();
-setTimeout(hideToggle, 600);
-setTimeout(hideToggle, 1500);
-</script>
-""", height=0)
 
-
-# ── LLM ───────────────────────────────────────────────────────────────────────
+# ── LLM ──────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def get_llm():
     return ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=1.0)
 
 llm = get_llm()
 
-
-# ── Level config — Fix #3 & #4: no description in card, animals kept for badge ─
+# ── Level config ─────────────────────────────────────────────────────────────
 LEVELS = {
     "Easy": {
-        "animal": "🐱",
-        "badge_class": "level-easy",
-        "card_bg": "#e8f5e9", "card_border": "#43a047", "card_color": "#1b5e20",
-        "desc": "Simple everyday words for beginners!",
+        "badge_class": "badge-easy",
+        "desc": "Simple everyday words",
         "prompt_instruction": (
             "Use very simple, common words that a 6-year-old knows every day "
-            "(e.g. happy, big, fast, kind, loud). Words should be 3–5 letters long "
+            "(e.g. happy, big, fast, kind, loud). Words should be 3-5 letters long "
             "and found in basic picture books."
         ),
     },
     "Medium": {
-        "animal": "🦅",
-        "badge_class": "level-medium",
-        "card_bg": "#fffde7", "card_border": "#fbc02d", "card_color": "#e65100",
-        "desc": "A bit more tricky — no tiny 4-letter words!",
+        "badge_class": "badge-medium",
+        "desc": "More challenging vocabulary",
         "prompt_instruction": (
             "Use medium-difficulty words for a 6-year-old who is a good reader. "
             "Words must be at least 5 letters long. Examples: brave, shiny, gentle, quiet."
         ),
     },
     "Hard": {
-        "animal": "🐯",
-        "badge_class": "level-hard",
-        "card_bg": "#ffebee", "card_border": "#e53935", "card_color": "#b71c1c",
-        "desc": "Long, tricky words for Word Champions!",
+        "badge_class": "badge-hard",
+        "desc": "Advanced words for strong readers",
         "prompt_instruction": (
-            "Use longer advanced words for a smart 6–7 year old. "
+            "Use longer advanced words for a smart 6-7 year old. "
             "Words should be 7+ letters. Examples: enormous, cheerful, frightened, wonderful."
         ),
     },
 }
 
-# Map levels to JS color-injection values
-LEVEL_COLORS = {
-    "Easy":   {"bg": "#e8f5e9", "border": "#43a047", "color": "#1b5e20"},
-    "Medium": {"bg": "#fffde7", "border": "#fbc02d", "color": "#e65100"},
-    "Hard":   {"bg": "#ffebee", "border": "#e53935", "color": "#b71c1c"},
-}
 
-
-# ── JS backup: color level buttons by innerText + interval retry ─────────────
-def apply_level_colors():
-    components.html("""
-    <script>
-    (function() {
-        var colors = {
-            'Easy':   {bg:'#c8e6c9', border:'#43a047', color:'#1b5e20'},
-            'Medium': {bg:'#fff9c4', border:'#fbc02d', color:'#e65100'},
-            'Hard':   {bg:'#ffcdd2', border:'#e53935', color:'#b71c1c'}
-        };
-        function applyColors() {
-            try {
-                var d = window.parent.document;
-                var matched = 0;
-                d.querySelectorAll('button').forEach(function(btn) {
-                    var txt = (btn.innerText || btn.textContent || '').trim();
-                    if (colors[txt]) {
-                        var c = colors[txt];
-                        btn.style.setProperty('background', c.bg, 'important');
-                        btn.style.setProperty('border-color', c.border, 'important');
-                        btn.style.setProperty('color', c.color, 'important');
-                        btn.style.setProperty('font-size', '1.6rem', 'important');
-                        btn.style.setProperty('font-weight', '900', 'important');
-                        btn.style.setProperty('min-height', '100px', 'important');
-                        matched++;
-                    }
-                });
-                return matched;
-            } catch(e) { return 0; }
-        }
-        // Immediate + interval until all 3 found or 20 tries
-        var tries = 0;
-        var iv = setInterval(function() {
-            if (applyColors() >= 3 || ++tries > 20) clearInterval(iv);
-        }, 150);
-    })();
-    </script>
-    """, height=0)
-
-
-# ── Fix #5: Celebration engine ─────────────────────────────────────────────────
+# ── Celebration engine (subtle, professional) ────────────────────────────────
 def _inject_js(code: str):
     components.html(f"<script>{code}</script>", height=0)
 
 def celebrate(correct_count: int):
-    cel = correct_count % 5
-
-    if cel == 0:
-        # 🎈 Balloons (Streamlit built-in)
-        st.balloons()
-
-    elif cel == 1:
-        # 🚀 Rockets flying up
-        _inject_js("""
-        (function() {
-            var d = window.parent.document;
-            [10,22,35,50,64,78,90].forEach(function(left, i) {
-                var el = d.createElement('div');
-                el.textContent = '🚀';
-                var dur = 1700 + i * 120;
-                el.style.cssText = 'position:fixed;left:'+left+'%;bottom:-80px;font-size:'+(2.2+i%3*0.4)+'rem;'
-                    +'z-index:99999;pointer-events:none;'
-                    +'transition:bottom '+dur+'ms ease-out;';
-                d.body.appendChild(el);
-                setTimeout(function(){ el.style.bottom='110vh'; }, 80 + i*60);
-                setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, dur+700);
-            });
-        })();
-        """)
-
-    elif cel == 2:
-        # ❄️ Snow burst (Fix #5: replaces old JS fireworks)
-        st.snow()
-
-    elif cel == 3:
-        # 🦋 Butterflies + hearts floating up
-        _inject_js("""
-        (function() {
-            var d = window.parent.document;
-            var items = ['🦋','❤️','🦋','💛','🦋','�','�','🦋','�','�'];
-            items.forEach(function(r, i) {
-                var el = d.createElement('div');
-                el.textContent = r;
-                var left = 5 + i * 9.5;
-                var dur  = 2000 + i*100;
-                var sway = (i%2===0?1:-1)*30;
-                el.style.cssText = 'position:fixed;left:'+left+'%;bottom:-80px;font-size:'+(2+i%3*0.4)+'rem;'
-                    +'z-index:99999;pointer-events:none;'
-                    +'transition:bottom '+dur+'ms ease-out, left '+(dur*0.8)+'ms ease-in-out;';
-                d.body.appendChild(el);
-                setTimeout(function(){ el.style.bottom='110vh'; el.style.left=(left+sway)+'%'; }, 80+i*40);
-                setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, dur+700);
-            });
-        })();
-        """)
-
-    else:
-        # 🌸 Fix #5 NEW: Roses & flowers dropping from the sky
-        _inject_js("""
-        (function() {
-            var d = window.parent.document;
-            var flowers = ['🌹','🌸','🌺','🌻','🌷','�','🌹','🌸','🌷','🌺','🌹','💐'];
-            flowers.forEach(function(f, i) {
-                var el = d.createElement('div');
-                el.textContent = f;
-                var left = Math.random()*90;
-                var dur  = 2200 + i*100;
-                var sway = (Math.random()-0.5)*40;
-                el.style.cssText = 'position:fixed;left:'+left+'%;top:-80px;font-size:'+(2+Math.random()*1.5)+'rem;'
-                    +'z-index:99999;pointer-events:none;'
-                    +'transition:top '+dur+'ms ease-in, left '+(dur*0.7)+'ms ease-in-out;';
-                d.body.appendChild(el);
-                setTimeout(function(){ el.style.top='110vh'; el.style.left=(left+sway)+'%'; }, 80+i*50);
-                setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, dur+700);
-            });
-        })();
-        """)
+    """Subtle celebration — soft confetti dots falling from top."""
+    _inject_js("""
+    (function() {
+        var d = window.parent.document;
+        var colors = ['#5a67d8','#48bb78','#ecc94b','#ed8936','#9f7aea','#fc8181','#4fd1c5'];
+        for (var i = 0; i < 40; i++) {
+            var dot = d.createElement('div');
+            var left = Math.random() * 100;
+            var size = 4 + Math.random() * 6;
+            var dur = 1200 + Math.random() * 1200;
+            var delay = Math.random() * 600;
+            var color = colors[Math.floor(Math.random() * colors.length)];
+            dot.style.cssText = 'position:fixed;left:'+left+'%;top:-20px;'
+                +'width:'+size+'px;height:'+size+'px;border-radius:50%;'
+                +'background:'+color+';z-index:99999;pointer-events:none;opacity:0.85;'
+                +'transition:top '+dur+'ms ease-in, opacity '+(dur*0.8)+'ms ease-in;';
+            d.body.appendChild(dot);
+            setTimeout(function(el){ el.style.top='105vh'; el.style.opacity='0'; }.bind(null,dot), 50+delay);
+            setTimeout(function(el){ if(el.parentNode) el.parentNode.removeChild(el); }.bind(null,dot), dur+800);
+        }
+    })();
+    """)
 
 
-# ── Session state ─────────────────────────────────────────────────────────────
+# ── Session state ────────────────────────────────────────────────────────────
 def init_quiz_state():
     st.session_state.questions     = []
     st.session_state.current_q     = 0
@@ -449,7 +375,7 @@ if "selected_level" not in st.session_state: st.session_state.selected_level = N
 if "correct_count"  not in st.session_state: st.session_state.correct_count = 0
 
 
-# ── Quiz generation ───────────────────────────────────────────────────────────
+# ── Quiz generation ──────────────────────────────────────────────────────────
 def build_prompt(level_key: str, used_words: list) -> str:
     cfg = LEVELS[level_key]
     used_str = ", ".join(used_words[-60:]) if used_words else "none yet"
@@ -463,7 +389,7 @@ Return ONLY a valid JSON array with exactly 10 objects, each with:
 - "word": the quiz word
 - "correct": the correct synonym (one word)
 - "options": array of exactly 4 strings — correct + 3 wrong options, random order
-- "explanation": short cheerful 1-2 sentence explanation for a young child (use emojis!)
+- "explanation": short, encouraging 1-2 sentence explanation for a young child
 Return ONLY the JSON array, no extra text or markdown.
 """
 
@@ -482,20 +408,14 @@ def generate_quiz(level_key: str, used_words: list) -> list:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# HEADER — title + tiny restart button on one row
+# HEADER
 # ══════════════════════════════════════════════════════════════════════════════
-title_col, restart_col = st.columns([8, 2])
-with title_col:
-    st.title("🧩 Synonym Quiz Challenge!")
-with restart_col:
-    st.write("")
-    st.markdown('<div class="small-restart">', unsafe_allow_html=True)
-    if st.button("🔄 Restart", key="header_refresh"):
-        init_quiz_state()
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown("---")
+st.markdown("""
+<div class="page-header">
+    <h1>Synonym Quiz</h1>
+    <p class="page-subtitle">Test your vocabulary knowledge</p>
+</div>
+""", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -503,33 +423,30 @@ st.markdown("---")
 # ══════════════════════════════════════════════════════════════════════════════
 if not st.session_state.quiz_started:
 
-    # ── Name input directly under header ──────────────────────────────────────
-    nc1, nc2, nc3 = st.columns([1, 4, 1])
-    with nc2:
-        st.markdown('<p class="section-heading">👋 What\'s your name?</p>',
-                    unsafe_allow_html=True)
-        name_val = st.text_input(
-            "name", placeholder="e.g. Zayn, Emma, Leo...",
-            label_visibility="collapsed", key="name_field",
-        )
-        st.session_state.player_name = name_val.strip()
+    # Name input
+    st.markdown('<p class="section-label">Your name</p>', unsafe_allow_html=True)
+    name_val = st.text_input(
+        "name", placeholder="e.g. Zayn, Emma, Leo...",
+        label_visibility="collapsed", key="name_field",
+    )
+    st.session_state.player_name = name_val.strip()
 
     st.markdown("---")
 
-    # ── Fix #4: Level cards — coloured, NO emoji, NO description ──────────────
-    st.markdown('<p class="section-heading">🎚️ Tap a level to start playing!</p>',
-                unsafe_allow_html=True)
+    # Level selection
+    st.markdown('<p class="section-label">Choose a difficulty level</p>', unsafe_allow_html=True)
 
     lcols = st.columns(3, gap="medium")
+    btn_classes = {"Easy": "easy-btn", "Medium": "medium-btn", "Hard": "hard-btn"}
     for lk in LEVELS:
         with lcols[list(LEVELS.keys()).index(lk)]:
-            # Label is just the level name — JS will color each button
+            st.markdown(f'<div class="{btn_classes[lk]}">', unsafe_allow_html=True)
             if st.button(lk, key=f"lvl_start_{lk}", use_container_width=True):
                 if not st.session_state.player_name:
-                    st.warning("🙈 Please type your name first! 😄")
+                    st.warning("Please enter your name first.")
                 else:
                     st.session_state.selected_level = lk
-                    with st.spinner(f"🤔 Building your {lk} quiz... ✨"):
+                    with st.spinner(f"Generating {lk} quiz..."):
                         try:
                             qs = generate_quiz(lk, st.session_state.used_words)
                             new_words = [q["word"] for q in qs]
@@ -546,26 +463,85 @@ if not st.session_state.quiz_started:
                         except Exception as e:
                             err_str = str(e)
                             if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                                st.error("😴 **Yawn!** I've played so many games today that my brain needs a quick 1-minute nap!\n\nStretch your arms, count to 60, and tap the level button to try again! 🌈")
+                                st.warning("The service is briefly paused due to high usage. Please wait about a minute and try again.")
                             else:
-                                st.error(f"😬 Oops! Couldn't generate the quiz. Try again! ({e})")
+                                st.error(f"Could not generate the quiz. Please try again. ({e})")
+            st.markdown('</div>', unsafe_allow_html=True)
 
-    # Apply colors to the level buttons via JS
-    apply_level_colors()
+    # Inject JS to color the difficulty buttons + fix restart & how-to-play text
+    components.html("""
+    <script>
+    (function() {
+        var d = window.parent.document;
 
-    # ── Fix #2: How to play — plain text, NOT a dropdown ──────────────────────
+        // Inject a style tag into parent to override Streamlit's white text
+        if (!d.getElementById('quiz-style-fix')) {
+            var s = d.createElement('style');
+            s.id = 'quiz-style-fix';
+            s.textContent = `
+                .stApp .how-to-play,
+                .stApp .how-to-play *,
+                .stApp .how-to-play li,
+                .stApp .how-to-play ul,
+                .stApp .how-to-play p,
+                .stApp .how-to-play span,
+                .stApp .how-to-play strong {
+                    color: #4a5568 !important;
+                }
+                .stApp .restart-btn button,
+                .stApp .restart-btn button p,
+                .stApp .restart-btn button span {
+                    background: rgba(255,255,255,0.9) !important;
+                    color: #4a5568 !important;
+                    border: 1px solid rgba(255,255,255,0.5) !important;
+                    border-radius: 10px !important;
+                    font-size: 0.85rem !important;
+                    font-weight: 500 !important;
+                }
+                .stApp .restart-btn button:hover {
+                    background: #ffffff !important;
+                }
+            `;
+            d.head.appendChild(s);
+        }
+
+        var colors = {
+            'Easy':   {bg: 'linear-gradient(135deg, #10b981, #059669)', shadow: '0 4px 16px rgba(16,185,129,0.35)'},
+            'Medium': {bg: 'linear-gradient(135deg, #f59e0b, #d97706)', shadow: '0 4px 16px rgba(245,158,11,0.35)'},
+            'Hard':   {bg: 'linear-gradient(135deg, #ef4444, #dc2626)', shadow: '0 4px 16px rgba(239,68,68,0.35)'}
+        };
+        function applyColors() {
+            var btns = d.querySelectorAll('button[kind="secondary"]');
+            btns.forEach(function(btn) {
+                var txt = btn.textContent.trim();
+                if (colors[txt]) {
+                    btn.style.cssText = 'background: ' + colors[txt].bg + ' !important; color: #fff !important; border: none !important; font-weight: 700 !important; font-size: 1.1rem !important; box-shadow: ' + colors[txt].shadow + '; border-radius: 14px !important; padding: 18px 16px !important; min-height: 70px !important; width: 100%; transition: transform 0.2s ease, box-shadow 0.2s ease;';
+                }
+            });
+        }
+        applyColors();
+        setTimeout(applyColors, 300);
+        setTimeout(applyColors, 800);
+        var obs = new MutationObserver(function() { applyColors(); });
+        obs.observe(d.body, {childList: true, subtree: true});
+        setTimeout(function() { obs.disconnect(); }, 5000);
+    })();
+    </script>
+    """, height=0)
+
+    # How to play
     st.markdown("---")
-    st.markdown('<p class="section-heading">📖 How to play</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-label">How to play</p>', unsafe_allow_html=True)
     st.markdown("""
     <div class="how-to-play">
     <ul>
-      <li>You'll get <b>10 questions</b> about synonyms (words that mean the same thing!)</li>
-      <li>Pick the correct synonym from 4 big tiles 🖱️</li>
-      <li>✅ Right answer = <b>+10 points</b> + a fun surprise celebration!</li>
-      <li>❌ Wrong answer = try again — same question stays!</li>
-      <li>Score as many points as you can out of <b>100</b>! 🏆</li>
+      <li>You will answer <strong>10 questions</strong> about synonyms (words that mean the same thing)</li>
+      <li>Select the correct synonym from 4 answer tiles</li>
+      <li>Correct answer = <strong>+10 points</strong></li>
+      <li>Wrong answer = try again on the same question</li>
+      <li>Aim for a perfect score of <strong>100</strong></li>
     </ul>
-    <b>Levels:</b> &nbsp; 🐱 Easy — 🦅 Medium — 🐯 Hard
+    <strong>Levels:</strong> &nbsp; Easy &middot; Medium &middot; Hard
     </div>
     """, unsafe_allow_html=True)
 
@@ -582,26 +558,23 @@ if st.session_state.quiz_done:
     cfg       = LEVELS[level_key]
 
     if score == 100:
-        emoji, headline = "🏆", f"PERFECT SCORE, {name}!!"
-        msg = "You are an absolute Word Champion! Incredible! 🎊"
+        headline = f"Perfect score, {name}!"
+        msg = "Outstanding performance. You got every single question right."
     elif score >= 70:
-        emoji, headline = "🌟", f"Amazing job, {name}!"
-        msg = "You're a Synonym Superstar — keep it up! ⭐"
+        headline = f"Great work, {name}!"
+        msg = "Excellent vocabulary skills. Keep practising to reach a perfect score."
     elif score >= 40:
-        emoji, headline = "👏", f"Well done, {name}!"
-        msg = "Great effort! Keep practising and you'll be a pro! 💪"
+        headline = f"Well done, {name}!"
+        msg = "Good effort. With more practice you will improve even further."
     else:
-        emoji, headline = "💪", f"Good try, {name}!"
-        msg = "Practice makes perfect — you've got this! 🌈"
+        headline = f"Nice try, {name}!"
+        msg = "Practice makes perfect. Try again and you will do better."
 
-    st.balloons()
+    celebrate(0)
     st.markdown(f"""
         <div class="end-card">
-            <div class="level-badge {cfg['badge_class']}" style="margin-bottom:1rem;">
-                {cfg['animal']} {level_key} Level
-            </div>
-            <div style="font-size:4rem;">{emoji}</div>
-            <div class="end-name">{headline}</div>
+            <span class="level-badge {cfg['badge_class']}">{level_key} Level</span>
+            <div class="end-headline" style="margin-top:16px;">{headline}</div>
             <div class="end-score">{score} / 100</div>
             <div class="end-msg">{msg}</div>
         </div>
@@ -610,16 +583,16 @@ if st.session_state.quiz_done:
     st.markdown("---")
     ca, cb, cc = st.columns(3)
     with ca:
-        st.markdown('<div class="big-btn">', unsafe_allow_html=True)
-        if st.button("🔄 Play Again!", key="end_play_again"):
+        st.markdown('<div class="action-btn">', unsafe_allow_html=True)
+        if st.button("Play Again", key="end_play_again"):
             saved = st.session_state.used_words
             init_quiz_state()
             st.session_state.used_words = saved
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     with cb:
-        st.markdown('<div class="refresh-btn">', unsafe_allow_html=True)
-        if st.button("🎚️ Change Level", key="end_change_level"):
+        st.markdown('<div class="restart-btn">', unsafe_allow_html=True)
+        if st.button("Change Level", key="end_change_level"):
             saved = st.session_state.used_words
             init_quiz_state()
             st.session_state.used_words = saved
@@ -627,9 +600,9 @@ if st.session_state.quiz_done:
         st.markdown('</div>', unsafe_allow_html=True)
     with cc:
         st.markdown(
-            f'<p style="color:#6a0dad;font-family:Comic Sans MS,cursive;'
-            f'text-align:center;font-size:0.85rem;padding-top:10px;">'
-            f'📚 {len(st.session_state.used_words)} unique words<br>learned!</p>',
+            f'<p style="color:#718096;text-align:center;font-size:0.85rem;'
+            f'padding-top:10px;font-family:Inter,sans-serif;">'
+            f'{len(st.session_state.used_words)} unique words learned</p>',
             unsafe_allow_html=True)
     st.stop()
 
@@ -645,25 +618,26 @@ level_key = st.session_state.selected_level or "Easy"
 cfg       = LEVELS[level_key]
 name      = st.session_state.player_name or "Explorer"
 
-# Score + level banner
+# Score banner
 st.markdown(
     f'<div class="score-banner">'
-    f'{cfg["animal"]} {level_key} &nbsp;|&nbsp; '
-    f'👤 {name} &nbsp;|&nbsp; '
-    f'⭐ {st.session_state.score} / 100 &nbsp;|&nbsp; '
-    f'Q {idx + 1} / {total_q}'
+    f'<strong>{level_key}</strong> &nbsp;·&nbsp; '
+    f'{name} &nbsp;·&nbsp; '
+    f'Score: <strong>{st.session_state.score}</strong> / 100 &nbsp;·&nbsp; '
+    f'Question {idx + 1} of {total_q}'
     f'</div>',
     unsafe_allow_html=True)
 
 st.progress(idx / total_q)
 
+# Question
 st.markdown(
     f'<div class="question-card">'
-    f'🔤 What is a synonym for &nbsp;<u>{q["word"].upper()}</u> ?'
+    f'What is a synonym for <u>{q["word"].upper()}</u>?'
     f'</div>',
     unsafe_allow_html=True)
 
-# ── Answer tiles ──────────────────────────────────────────────────────────────
+# Answer tiles
 if not st.session_state.answered:
     cols = st.columns(2)
     for i, option in enumerate(q["options"]):
@@ -679,22 +653,22 @@ if not st.session_state.answered:
                     st.session_state.last_correct = False
                 st.rerun()
 
-# ── Feedback ──────────────────────────────────────────────────────────────────
+# Feedback
 if st.session_state.last_correct is not None:
 
     if st.session_state.last_correct:
         celebrate(st.session_state.correct_count - 1)
         st.markdown(
             f'<div class="feedback-correct">'
-            f'✅ <b>Correct, {name}! Well done!</b> +10 points 🎉<br><br>'
+            f'<strong>Correct!</strong> Well done, {name}. +10 points<br><br>'
             f'{q["explanation"]}'
             f'</div>',
             unsafe_allow_html=True)
         st.markdown("")
         c1, c2, c3 = st.columns([1, 2, 1])
         with c2:
-            st.markdown('<div class="big-btn">', unsafe_allow_html=True)
-            next_label = "➡️ Next Question!" if idx + 1 < total_q else "🏁 See My Results!"
+            st.markdown('<div class="action-btn">', unsafe_allow_html=True)
+            next_label = "Next Question" if idx + 1 < total_q else "See Results"
             if st.button(next_label, key="next_btn"):
                 if idx + 1 < total_q:
                     st.session_state.current_q   += 1
@@ -710,8 +684,8 @@ if st.session_state.last_correct is not None:
         chosen = st.session_state.last_chosen
         st.markdown(
             f'<div class="feedback-wrong">'
-            f'❌ <b>Oops! "{chosen}" is not quite right.</b><br>'
-            f'Try again, {name} — you can do it! 💪'
+            f'<strong>Not quite.</strong> "{chosen}" is not the right answer.<br>'
+            f'Try again, {name}.'
             f'</div>',
             unsafe_allow_html=True)
         st.markdown("")
