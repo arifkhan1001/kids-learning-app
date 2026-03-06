@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
@@ -142,6 +143,48 @@ st.markdown("""
     footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
+
+# Inject JS to fix text colors inside cards (overrides Streamlit's global white)
+components.html("""
+<script>
+(function() {
+    var d = window.parent.document;
+    if (!d.getElementById('vocab-style-fix')) {
+        var s = d.createElement('style');
+        s.id = 'vocab-style-fix';
+        s.textContent = `
+            .stApp .result-card,
+            .stApp .result-card *,
+            .stApp .result-card p,
+            .stApp .result-card strong,
+            .stApp .result-card em,
+            .stApp .result-card li,
+            .stApp .result-card ul,
+            .stApp .result-card ol,
+            .stApp .result-card span,
+            .stApp .result-card h1,
+            .stApp .result-card h2,
+            .stApp .result-card h3,
+            .stApp .result-card h4 {
+                color: #2d3748 !important;
+            }
+            .stApp .result-card strong {
+                color: #1a202c !important;
+            }
+            .stApp .success-bar,
+            .stApp .success-bar * {
+                color: #276749 !important;
+            }
+            .stApp .encourage-text,
+            .stApp .encourage-text * {
+                color: #718096 !important;
+            }
+        `;
+        d.head.appendChild(s);
+    }
+})();
+</script>
+""", height=0)
 
 # ── Header ───────────────────────────────────────────────────────────────────
 st.markdown("""
