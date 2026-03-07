@@ -1,9 +1,9 @@
 import streamlit as st
 import streamlit.components.v1 as components
-from utils.math_questions import get_math_questions
+from utils.reasoning_questions import get_reasoning_questions
 import random
 
-st.set_page_config(page_title="Maths Practice", page_icon="🧮", layout="centered")
+st.set_page_config(page_title="Reasoning", page_icon="🧩", layout="centered")
 
 # ── Modern CSS ───────────────────────────────────────────────────────────────
 st.markdown("""
@@ -85,10 +85,6 @@ st.markdown("""
         box-shadow: 0 8px 24px rgba(139,92,246,0.15);
         background: rgba(255,255,255,1) !important;
     }
-
-    /* ── Level buttons — base override for colored buttons ── */
-    .level-btn-easy .stButton > button,
-    button[kind="secondary"] { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 
     /* ── Primary action buttons ── */
     .action-btn > div > button {
@@ -220,41 +216,53 @@ CELEBRATIONS = [
     """
     (function(){
         var d=window.parent.document;
-        for(var i=0;i<35;i++){
-            var b=d.createElement('div');
-            var size=35+Math.random()*40;
+        for(var i=0;i<30;i++){
+            var s=d.createElement('div');
+            var size=18+Math.random()*28;
             var left=Math.random()*100;
-            var dur=2500+Math.random()*2500;
-            var delay=Math.random()*1500;
-            var hue=Math.floor(Math.random()*360);
-            b.textContent='🎈';
-            b.style.cssText='position:fixed;left:'+left+'%;bottom:-60px;font-size:'+size+'px;z-index:99999;pointer-events:none;filter:hue-rotate('+hue+'deg);transition:bottom '+dur+'ms ease-out, opacity '+(dur*0.8)+'ms ease-in;opacity:0.9;';
-            d.body.appendChild(b);
-            setTimeout(function(el){el.style.bottom='110vh';el.style.opacity='0';}.bind(null,b),50+delay);
-            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,b),dur+2000);
+            var dur=1500+Math.random()*2000;
+            var delay=Math.random()*1200;
+            s.textContent='⭐';
+            s.style.cssText='position:fixed;left:'+left+'%;top:-40px;font-size:'+size+'px;z-index:99999;pointer-events:none;opacity:0.9;transition:top '+dur+'ms ease-in, left 0.5s ease, opacity '+(dur*0.8)+'ms ease-in;';
+            d.body.appendChild(s);
+            setTimeout(function(el,l){el.style.top='105vh';el.style.left=(l+Math.random()*10-5)+'%';el.style.opacity='0';}.bind(null,s,left),50+delay);
+            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,s),dur+2000);
         }
     })();
     """,
     """
     (function(){
-        var d=window.parent.document;
-        var emojis=['🎉','🎊','🥳','🏆','👏','💯','🔥','✅','🙌','👑'];
-        var cx=window.innerWidth/2, cy=window.innerHeight/2;
-        for(var i=0;i<35;i++){
-            var e=d.createElement('div');
-            var size=22+Math.random()*30;
-            var angle=Math.random()*Math.PI*2;
-            var dist=100+Math.random()*300;
-            var dur=1500+Math.random()*1500;
-            var delay=Math.random()*400;
-            e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
-            e.style.cssText='position:fixed;left:'+cx+'px;top:'+cy+'px;font-size:'+size+'px;z-index:99999;pointer-events:none;opacity:1;transition:left '+dur+'ms ease-out, top '+dur+'ms ease-out, opacity '+(dur*0.8)+'ms ease-in;';
-            d.body.appendChild(e);
-            var fx=cx+Math.cos(angle)*dist;
-            var fy=cy+Math.sin(angle)*dist;
-            setTimeout(function(el,x,y){el.style.left=x+'px';el.style.top=y+'px';el.style.opacity='0';}.bind(null,e,fx,fy),50+delay);
-            setTimeout(function(el){if(el.parentNode)el.parentNode.removeChild(el);}.bind(null,e),dur+2000);
+        var d=window.parent.document, c=d.createElement('canvas');
+        c.id='fw_canvas'; c.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;pointer-events:none;';
+        d.body.appendChild(c); var ctx=c.getContext('2d');
+        c.width=window.innerWidth; c.height=window.innerHeight;
+        var particles=[];
+        var colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6fb6','#c792ea','#45f3ff'];
+        for(var b=0;b<6;b++){
+            var bx=Math.random()*c.width,by=Math.random()*c.height*0.5;
+            for(var i=0;i<40;i++){
+                var angle=Math.random()*Math.PI*2, speed=2+Math.random()*6;
+                particles.push({x:bx,y:by,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,
+                    life:60+Math.random()*40,age:0,color:colors[Math.floor(Math.random()*colors.length)],
+                    size:3+Math.random()*5});
+            }
         }
+        var frame=0;
+        function anim(){
+            ctx.clearRect(0,0,c.width,c.height);
+            var alive=false;
+            particles.forEach(function(p){
+                p.age++; if(p.age>p.life) return;
+                alive=true; p.x+=p.vx; p.y+=p.vy; p.vy+=0.08;
+                var alpha=1-p.age/p.life;
+                ctx.beginPath(); ctx.arc(p.x,p.y,p.size*alpha,0,Math.PI*2);
+                ctx.fillStyle=p.color; ctx.globalAlpha=alpha; ctx.fill();
+            });
+            ctx.globalAlpha=1;
+            if(alive&&frame<180){frame++;requestAnimationFrame(anim);}
+            else{c.remove();}
+        }
+        anim();
     })();
     """
 ]
@@ -262,20 +270,21 @@ def celebrate(correct_count: int):
     effect_index = correct_count % len(CELEBRATIONS)
     components.html(f"<script>{CELEBRATIONS[effect_index]}</script>", height=0)
 
+
 # ── Session state ────────────────────────────────────────────────────────────
 def init_quiz_state():
-    st.session_state.math_questions = []
-    st.session_state.math_current_q = 0
-    st.session_state.math_score = 0
-    st.session_state.math_correct = 0
-    st.session_state.math_answered = False
-    st.session_state.math_last_correct = None
-    st.session_state.math_last_chosen = None
-    st.session_state.math_started = False
-    st.session_state.math_done = False
-    st.session_state.math_level = None
+    st.session_state.reason_questions = []
+    st.session_state.reason_current_q = 0
+    st.session_state.reason_score = 0
+    st.session_state.reason_correct = 0
+    st.session_state.reason_answered = False
+    st.session_state.reason_last_correct = None
+    st.session_state.reason_last_chosen = None
+    st.session_state.reason_started = False
+    st.session_state.reason_done = False
+    st.session_state.reason_level = None
 
-if "math_started" not in st.session_state:
+if "reason_started" not in st.session_state:
     init_quiz_state()
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -283,15 +292,15 @@ if "math_started" not in st.session_state:
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <div class="page-header">
-    <h1>Maths Practice</h1>
-    <p class="page-subtitle">Sharpen your math skills with fun challenges</p>
+    <h1>Reasoning Quiz</h1>
+    <p class="page-subtitle">Test your logic and problem-solving skills</p>
 </div>
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # START SCREEN
 # ══════════════════════════════════════════════════════════════════════════════
-if not st.session_state.math_started:
+if not st.session_state.reason_started:
     st.markdown('<p class="section-label">Choose a difficulty level</p>', unsafe_allow_html=True)
 
     lcols = st.columns(3, gap="medium")
@@ -300,14 +309,14 @@ if not st.session_state.math_started:
     for idx, lk in enumerate(levels):
         with lcols[idx]:
             if st.button(lk, key=f"lvl_start_{lk}", use_container_width=True):
-                st.session_state.math_level = lk
-                st.session_state.math_questions = get_math_questions(lk, 10)
-                st.session_state.math_started = True
-                st.session_state.math_current_q = 0
-                st.session_state.math_score = 0
-                st.session_state.math_correct = 0
-                st.session_state.math_answered = False
-                st.session_state.math_done = False
+                st.session_state.reason_level = lk
+                st.session_state.reason_questions = get_reasoning_questions(lk, 10)
+                st.session_state.reason_started = True
+                st.session_state.reason_current_q = 0
+                st.session_state.reason_score = 0
+                st.session_state.reason_correct = 0
+                st.session_state.reason_answered = False
+                st.session_state.reason_done = False
                 st.rerun()
 
     components.html("""
@@ -339,27 +348,27 @@ if not st.session_state.math_started:
 # ══════════════════════════════════════════════════════════════════════════════
 # END SCREEN
 # ══════════════════════════════════════════════════════════════════════════════
-if st.session_state.math_done:
-    score = st.session_state.math_score
+if st.session_state.reason_done:
+    score = st.session_state.reason_score
 
     if score == 100:
         headline = "Perfect score!"
-        msg = "Outstanding performance. You got every single question right."
+        msg = "You are a master of logic! Excellent job."
     elif score >= 70:
         headline = "Great work!"
-        msg = "Excellent math skills. Keep practicing to reach a perfect score."
+        msg = "Your reasoning skills are sharp. Keep it up!"
     elif score >= 40:
         headline = "Good try!"
-        msg = "You're getting there! A little more practice and you'll be a math whiz."
+        msg = "You're getting better at solving these puzzles!"
     else:
         headline = "Keep practicing!"
-        msg = "Math can be tricky, but you'll get better every time you try."
+        msg = "Puzzles can be tricky, but practice makes perfect."
 
     st.markdown(f"""
-    <div class="end-card">
-        <div class="end-headline">{headline}</div>
-        <div class="end-score">{score} / 100</div>
-        <div class="end-msg">{msg}</div>
+    <div class="end-card" style="color: #1a202c !important;">
+        <div class="end-headline" style="color: #1a202c !important;">{headline}</div>
+        <div class="end-score" style="color: #5a67d8 !important;">{score} / 100</div>
+        <div class="end-msg" style="color: #718096 !important;">{msg}</div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -399,9 +408,9 @@ if st.session_state.math_done:
 # ══════════════════════════════════════════════════════════════════════════════
 # QUIZ SCREEN
 # ══════════════════════════════════════════════════════════════════════════════
-idx = st.session_state.math_current_q
-total = len(st.session_state.math_questions)
-q_data = st.session_state.math_questions[idx]
+idx = st.session_state.reason_current_q
+total = len(st.session_state.reason_questions)
+q_data = st.session_state.reason_questions[idx]
 
 # Progress + Restart
 c1, c2 = st.columns([4, 1])
@@ -417,7 +426,7 @@ with c2:
 
 # Score banner
 st.markdown(
-    f'<div class="score-banner">Score: <strong>{st.session_state.math_score}</strong></div>',
+    f'<div class="score-banner">Score: <strong>{st.session_state.reason_score}</strong></div>',
     unsafe_allow_html=True
 )
 
@@ -430,21 +439,21 @@ st.markdown(f"""
 
 # Answer check logic
 def handle_answer(opt):
-    st.session_state.math_answered = True
-    st.session_state.math_last_chosen = opt
+    st.session_state.reason_answered = True
+    st.session_state.reason_last_chosen = opt
     if opt == q_data["answer"]:
-        st.session_state.math_last_correct = True
-        st.session_state.math_score += 10
-        st.session_state.math_correct += 1
+        st.session_state.reason_last_correct = True
+        st.session_state.reason_score += 10
+        st.session_state.reason_correct += 1
     else:
-        st.session_state.math_last_correct = False
+        st.session_state.reason_last_correct = False
 
 # Options
 opts = q_data["options"]
 c_left, c_right = st.columns(2, gap="medium")
 
 # Option buttons
-if not st.session_state.math_answered:
+if not st.session_state.reason_answered:
     for i, opt in enumerate(opts):
         col = c_left if i % 2 == 0 else c_right
         with col:
@@ -459,12 +468,12 @@ else:
             st.button(opt, key=f"opt_{idx}_{opt}_disabled", disabled=True, use_container_width=True)
 
 # Feedback
-if st.session_state.math_answered:
-    if st.session_state.math_last_correct:
-        celebrate(st.session_state.math_correct)
-        st.markdown(f'<div class="feedback-correct">✅ You got it right! Great job!</div>', unsafe_allow_html=True)
+if st.session_state.reason_answered:
+    if st.session_state.reason_last_correct:
+        celebrate(st.session_state.reason_correct)
+        st.markdown(f'<div class="feedback-correct">✅ Sharp thinking! That is correct.</div>', unsafe_allow_html=True)
     else:
-        st.markdown(f'<div class="feedback-wrong">❌ Not quite. The correct answer was <strong>{q_data["answer"]}</strong>. Try the next one!</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="feedback-wrong">❌ Not exactly. The correct answer was <strong>{q_data["answer"]}</strong>. Try the next one!</div>', unsafe_allow_html=True)
 
     st.markdown("<br/>", unsafe_allow_html=True)
     
@@ -474,10 +483,10 @@ if st.session_state.math_answered:
         btn_label = "Next Question" if idx < total - 1 else "See Results"
         if st.button(btn_label, use_container_width=True):
             if idx < total - 1:
-                st.session_state.math_current_q += 1
-                st.session_state.math_answered = False
+                st.session_state.reason_current_q += 1
+                st.session_state.reason_answered = False
             else:
-                st.session_state.math_done = True
+                st.session_state.reason_done = True
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 

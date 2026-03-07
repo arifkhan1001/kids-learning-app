@@ -180,9 +180,9 @@ st.markdown("---")
 cards = [
     {"key": "vocab",     "icon": icons["vocab"],     "title": "Vocabulary Builder", "badge": "Available",   "cls": "badge-live",  "page": "pages/1_📖_Vocabulary_Builder.py"},
     {"key": "quiz",      "icon": icons["quiz"],      "title": "Synonym Quiz",       "badge": "Available",   "cls": "badge-live",  "page": "pages/2_🧩_Synonym_Quiz.py"},
-    {"key": "maths",     "icon": icons["maths"],     "title": "Maths Practice",     "badge": "Available",   "cls": "badge-live",  "page": "pages/3_Maths.py"},
-    {"key": "reasoning", "icon": icons["reasoning"], "title": "Reasoning",          "badge": "Available",   "cls": "badge-live",  "page": "pages/4_Reasoning.py"},
-    {"key": "french",    "icon": icons["french"],    "title": "French Language",    "badge": "Available",   "cls": "badge-live",  "page": "pages/5_French.py"},
+    {"key": "maths",     "icon": icons["maths"],     "title": "Maths Practice",     "badge": "Available",   "cls": "badge-live",  "page": "pages/3_🧮_Maths.py"},
+    {"key": "reasoning", "icon": icons["reasoning"], "title": "Reasoning",          "badge": "Available",   "cls": "badge-live",  "page": "pages/4_🧠_Reasoning.py"},
+    {"key": "french",    "icon": icons["french"],    "title": "French Language",    "badge": "Available",   "cls": "badge-live",  "page": "pages/5_🥖_French.py"},
 ]
 
 def card_html(c: dict) -> str:

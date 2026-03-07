@@ -1,6 +1,9 @@
 import streamlit as st
 import streamlit.components.v1 as components
 from utils.french_words import get_french_categories, get_french_words_by_category
+import io
+from gtts import gTTS
+import base64
 
 st.set_page_config(page_title="French Language", page_icon="🥖", layout="centered")
 
@@ -214,39 +217,32 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Audio button via isolated component iframe
-audio_btn_html = f"""
-<style>
-    body {{ margin: 0; padding: 0; background: transparent; display: flex; justify-content: center; font-family: 'Inter', sans-serif; }}
-    button {{
-        background: linear-gradient(135deg, #7c3aed, #6366f1);
-        color: white; border: none; padding: 12px 32px;
-        border-radius: 999px; font-size: 1.1rem; font-weight: 600;
-        cursor: pointer; display: flex; align-items: center; gap: 8px;
-        box-shadow: 0 4px 16px rgba(124,58,237,0.3);
-        transition: transform 0.2s, box-shadow 0.2s;
-    }}
-    button:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(124,58,237,0.4);
-    }}
-</style>
-<button onclick="playAudio()">▶️ Hear it out loud</button>
-<script>
-    function playAudio() {{
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            var msg = new SpeechSynthesisUtterance("{current_word['fr'].replace('"', '\\"')}");
-            msg.lang = 'fr-FR';
-            msg.rate = 0.85;
-            window.speechSynthesis.speak(msg);
-        }} else {{
-            alert("Sorry, your browser doesn't support text-to-speech.");
+# Audio button via isolated component iframe using gTTS
+def get_audio_html(text):
+    tts = gTTS(text=text, lang="fr")
+    fp = io.BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+    b64 = base64.b64encode(fp.read()).decode()
+    return f'''
+    <style>
+        .audio-container {{
+            background: linear-gradient(135deg, #7c3aed, #6366f1);
+            border-radius: 999px; padding: 6px 16px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+            width: fit-content; margin-top: 1rem;
         }}
-    }}
-</script>
-"""
-components.html(audio_btn_html, height=70)
+        .audio-container span {{ color: white; font-weight: 600; font-family: 'Inter', sans-serif; margin-right: 12px; font-size: 1.1rem; }}
+        audio {{ height: 36px; border-radius: 20px; outline: none; }}
+    </style>
+    <div class="audio-container">
+        <span>▶️ Hear it:</span>
+        <audio controls src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>
+    </div>
+    '''
+
+st.markdown(get_audio_html(current_word['fr']), unsafe_allow_html=True)
 
 # ── Navigation Buttons ──
 nav1, nav2, nav3 = st.columns([1, 2, 1])
@@ -257,7 +253,7 @@ with nav1:
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 with nav2:
-    st.markdown(f"<div style='text-align:center; padding-top: 14px; color: rgba(255,255,255,0.8); font-size: 0.9rem;'>Word {{idx + 1}} of {{total_words}}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center; padding-top: 14px; color: rgba(255,255,255,0.8); font-size: 0.9rem;'>Word {idx + 1} of {total_words}</div>", unsafe_allow_html=True)
 with nav3:
     st.markdown('<div class="nav-btn">', unsafe_allow_html=True)
     if st.button("Next ➡️", disabled=(idx == total_words - 1), use_container_width=True):

@@ -862,7 +862,16 @@ st.markdown(
     f'</div>',
     unsafe_allow_html=True)
 
-st.progress(idx / total_q)
+c1, c2 = st.columns([4, 1])
+with c1:
+    st.progress(idx / total_q)
+with c2:
+    st.markdown('<div class="restart-btn" style="text-align:right;">', unsafe_allow_html=True)
+    if st.button("Restart", key="quiz_restart_btn"):
+        st.session_state.used_words = []
+        init_quiz_state()
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Question
 st.markdown(
