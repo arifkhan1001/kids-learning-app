@@ -714,6 +714,13 @@ if not st.session_state.quiz_started:
                 .stApp .section-label { color: rgba(255,255,255,0.9) !important; }
                 .stApp .score-banner { color: rgba(255,255,255,0.9) !important; }
                 .stApp .score-banner strong { color: #ffffff !important; }
+                /* Answer option buttons — dark text on white bg */
+                .stApp button[kind="secondary"],
+                .stApp button[kind="secondary"] p,
+                .stApp button[kind="secondary"] span {
+                    color: #1a202c !important;
+                }
+                /* Action buttons (Next Question, Play Again) — white text on purple */
                 .stApp .action-btn button,
                 .stApp .action-btn button p,
                 .stApp .action-btn button span { color: #ffffff !important; }
