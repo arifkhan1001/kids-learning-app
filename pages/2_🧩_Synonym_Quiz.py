@@ -603,6 +603,14 @@ Return ONLY the JSON array, no extra text or markdown.
 
 def generate_quiz(level_key: str, used_words: list) -> list:
     response = llm.invoke(build_prompt(level_key, used_words))
+    
+    # Track API usage
+    try:
+        from utils.usage import increment_usage
+        increment_usage(1)
+    except Exception:
+        pass
+        
     raw = response.content.strip()
     if raw.startswith("```"):
         parts = raw.split("```")
