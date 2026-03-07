@@ -237,6 +237,14 @@ if learn_button:
             try:
                 formatted_prompt = prompt.format(word=word_input.strip())
                 response = llm.invoke(formatted_prompt)
+                
+                # Track API usage
+                try:
+                    from utils.usage import increment_usage
+                    increment_usage(1)
+                except Exception:
+                    pass
+                
                 st.markdown('<div class="success-bar">Great choice! Here\'s what we found.</div>',
                             unsafe_allow_html=True)
                 st.markdown(f'<div class="result-card">{response.content}</div>',

@@ -269,5 +269,55 @@ components.html("""
 """, height=0)
 
 
+# ── API Usage Tracker ──────────────────────────────────────────────────────────
+from utils.usage import get_usage, get_remaining, DAILY_LIMIT
+usage_data = get_usage()
+remaining = get_remaining()
+used = usage_data["used"]
+pct = min(100, int((used / DAILY_LIMIT) * 100))
+
 st.markdown("---")
+
+st.markdown(f"""
+<style>
+.usage-container {{
+    display: flex; justify-content: center; margin: 1rem 0;
+}}
+.usage-card {{
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    color: white; font-family: 'Inter', sans-serif;
+}}
+.usage-item {{
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}}
+.usage-label {{ font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; }}
+.usage-val {{ font-size: 1.25rem; font-weight: 800; }}
+.usage-divider {{ width: 1px; height: 30px; background: rgba(255,255,255,0.3); }}
+</style>
+<div class="usage-container">
+    <div class="usage-card">
+        <div class="usage-item">
+            <span class="usage-label">Daily Limit</span>
+            <span class="usage-val">{DAILY_LIMIT}</span>
+        </div>
+        <div class="usage-divider"></div>
+        <div class="usage-item">
+            <span class="usage-label">Used</span>
+            <span class="usage-val" style="color: {'#fca5a5' if pct > 90 else '#ffffff'};">{used}</span>
+        </div>
+        <div class="usage-divider"></div>
+        <div class="usage-item">
+            <span class="usage-label">Remaining</span>
+            <span class="usage-val" style="color: {'#86efac' if remaining > 0 else '#fca5a5'};">{remaining}</span>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown('<p class="footer-text">Learning Hub — Built for curious young minds</p>', unsafe_allow_html=True)
