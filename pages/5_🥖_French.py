@@ -161,7 +161,8 @@ components.html("""
             .stApp .flashcard { color: #1a202c !important; }
             .stApp .word-fr { color: #5a67d8 !important; }
             .stApp .word-en { color: #718096 !important; }
-            .stApp .nav-btn button p { color: #4a5568 !important; }
+            .stApp .nav-btn button p { color: #ffffff !important; font-weight: 600 !important; }
+            .stApp .nav-btn button { font-weight: 600 !important; color: #ffffff !important; }
         `;
         d.head.appendChild(s);
     }

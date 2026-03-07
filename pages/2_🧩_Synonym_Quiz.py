@@ -1,11 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
-from langchain_google_genai import ChatGoogleGenerativeAI
-from dotenv import load_dotenv
-import json
+from utils.synonym_questions import get_synonym_questions
 import random
-
-load_dotenv()
 
 st.set_page_config(page_title="Synonym Quiz", page_icon="📝", layout="centered")
 
@@ -584,43 +580,7 @@ if "correct_count"  not in st.session_state: st.session_state.correct_count = 0
 
 
 # ── Quiz generation ──────────────────────────────────────────────────────────
-def build_prompt(level_key: str, used_words: list) -> str:
-    cfg = LEVELS[level_key]
-    used_str = ", ".join(used_words[-60:]) if used_words else "none yet"
-    return f"""
-You are creating a word synonym quiz for 6-8 year old children.
-Generate exactly 10 quiz questions. Each question asks for the synonym of a given word.
-Difficulty level: {level_key}
-Word-selection rules: {cfg['prompt_instruction']}
-IMPORTANT — do NOT reuse these already-used words: {used_str}
-Return ONLY a valid JSON array with exactly 10 objects, each with:
-- "word": the quiz word
-- "correct": the correct synonym (one word)
-- "options": array of exactly 4 strings — correct + 3 wrong options, random order
-- "explanation": short, encouraging 1-2 sentence explanation for a young child
-Return ONLY the JSON array, no extra text or markdown.
-"""
-
-def generate_quiz(level_key: str, used_words: list) -> list:
-    response = llm.invoke(build_prompt(level_key, used_words))
-    
-    # Track API usage
-    try:
-        from utils.usage import increment_usage
-        increment_usage(1)
-    except Exception:
-        pass
-        
-    raw = response.content.strip()
-    if raw.startswith("```"):
-        parts = raw.split("```")
-        raw = parts[1] if len(parts) > 1 else raw
-        if raw.startswith("json"):
-            raw = raw[4:]
-    questions = json.loads(raw.strip())
-    for q in questions:
-        random.shuffle(q["options"])
-    return questions[:10]
+# Removed LLM logic in favor of static dictionary bank
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -662,9 +622,9 @@ if not st.session_state.quiz_started:
                     st.warning("Please enter your name first.")
                 else:
                     st.session_state.selected_level = lk
-                    with st.spinner(f"Generating {lk} quiz..."):
+                    with st.spinner(f"Loading {lk} quiz..."):
                         try:
-                            qs = generate_quiz(lk, st.session_state.used_words)
+                            qs = get_synonym_questions(lk, 10)
                             new_words = [q["word"] for q in qs]
                             st.session_state.used_words = (
                                 st.session_state.used_words + new_words)[-120:]
@@ -677,11 +637,7 @@ if not st.session_state.quiz_started:
                             st.session_state.quiz_done     = False
                             st.rerun()
                         except Exception as e:
-                            err_str = str(e)
-                            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                                st.warning("The service is briefly paused due to high usage. Please wait about a minute and try again.")
-                            else:
-                                st.error(f"Could not generate the quiz. Please try again. ({e})")
+                            st.error(f"Could not load the quiz. Please try again. ({e})")
             st.markdown('</div>', unsafe_allow_html=True)
 
     # Inject JS to color the difficulty buttons + fix restart & how-to-play text
@@ -772,7 +728,7 @@ if not st.session_state.quiz_started:
       <li>You will answer <strong>10 questions</strong> about synonyms (words that mean the same thing)</li>
       <li>Select the correct synonym from 4 answer tiles</li>
       <li>Correct answer = <strong>+10 points</strong></li>
-      <li>Wrong answer = try again on the same question</li>
+      <li>Learn from the example sentence shown after you answer</li>
       <li>Aim for a perfect score of <strong>100</strong></li>
     </ul>
     <strong>Levels:</strong> &nbsp; Easy &middot; Medium &middot; Hard
@@ -886,64 +842,44 @@ if not st.session_state.answered:
     for i, option in enumerate(q["options"]):
         with cols[i % 2]:
             if st.button(f"  {option}  ", key=f"opt_{idx}_{i}", use_container_width=True):
+                st.session_state.answered = True
                 st.session_state.last_chosen = option
                 if option.strip().lower() == q["correct"].strip().lower():
                     st.session_state.score        += 10
                     st.session_state.correct_count += 1
-                    st.session_state.answered      = True
                     st.session_state.last_correct  = True
                 else:
                     st.session_state.last_correct = False
                 st.rerun()
+else:
+    cols = st.columns(2)
+    for i, option in enumerate(q["options"]):
+        with cols[i % 2]:
+            st.button(f"  {option}  ", key=f"opt_{idx}_{i}_disabled", disabled=True, use_container_width=True)
 
 # Feedback
-if st.session_state.last_correct is not None:
-
+if st.session_state.answered:
     if st.session_state.last_correct:
-        celebrate(st.session_state.correct_count - 1)
-        st.markdown(
-            f'<div class="feedback-correct">'
-            f'<strong>Correct!</strong> Well done, {name}. +10 points<br><br>'
-            f'{q["explanation"]}'
-            f'</div>',
-            unsafe_allow_html=True)
-        st.markdown("")
-        c1, c2, c3 = st.columns([1, 2, 1])
-        with c2:
-            st.markdown('<div class="action-btn">', unsafe_allow_html=True)
-            next_label = "Next Question" if idx + 1 < total_q else "See Results"
-            if st.button(next_label, key="next_btn"):
-                if idx + 1 < total_q:
-                    st.session_state.current_q   += 1
-                    st.session_state.answered     = False
-                    st.session_state.last_correct = None
-                    st.session_state.last_chosen  = None
-                else:
-                    st.session_state.quiz_done = True
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
+        celebrate(st.session_state.correct_count)
+        fmsg = f'<div class="feedback-correct">✅ <strong>Correct!</strong> Well done, {name}. +10 points<br><br>{q["explanation"]}</div>'
     else:
         chosen = st.session_state.last_chosen
-        st.markdown(
-            f'<div class="feedback-wrong">'
-            f'<strong>Not quite.</strong> "{chosen}" is not the right answer.<br>'
-            f'Try again, {name}.'
-            f'</div>',
-            unsafe_allow_html=True)
-        st.markdown("")
-        st.session_state.last_correct = None
-        st.session_state.last_chosen  = None
-        cols = st.columns(2)
-        for i, option in enumerate(q["options"]):
-            with cols[i % 2]:
-                if st.button(f"  {option}  ", key=f"retry_{idx}_{i}", use_container_width=True):
-                    st.session_state.last_chosen = option
-                    if option.strip().lower() == q["correct"].strip().lower():
-                        st.session_state.score        += 10
-                        st.session_state.correct_count += 1
-                        st.session_state.answered      = True
-                        st.session_state.last_correct  = True
-                    else:
-                        st.session_state.last_correct = False
-                    st.rerun()
+        fmsg = f'<div class="feedback-wrong">❌ <strong>Not quite.</strong> The correct answer was <strong>{q["correct"]}</strong>.<br><br>{q["explanation"]}<br>Keep trying, {name}!</div>'
+        
+    st.markdown(fmsg, unsafe_allow_html=True)
+    st.markdown("<br/>", unsafe_allow_html=True)
+    
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c2:
+        st.markdown('<div class="action-btn" style="text-align: center;">', unsafe_allow_html=True)
+        next_label = "Next Question" if idx + 1 < total_q else "See Results"
+        if st.button(next_label, use_container_width=True):
+            if idx + 1 < total_q:
+                st.session_state.current_q   += 1
+                st.session_state.answered     = False
+                st.session_state.last_correct = None
+                st.session_state.last_chosen  = None
+            else:
+                st.session_state.quiz_done = True
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)

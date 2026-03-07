@@ -125,6 +125,22 @@ st.markdown("""
         background: #ffffff !important;
     }
 
+    /* ── Input ── */
+    .stTextInput > div > div > input {
+        border-radius: 12px !important;
+        border: 1.5px solid #e2e8f0 !important;
+        font-size: 1rem !important;
+        padding: 12px 18px !important;
+        background-color: #ffffff !important;
+        color: #2d3748 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    .stTextInput > div > div > input:focus {
+        border-color: #5a67d8 !important;
+        box-shadow: 0 0 0 3px rgba(90,103,216,0.1) !important;
+    }
+    .stTextInput > div > div > input::placeholder { color: #a0aec0 !important; }
+
     /* ── Result card and score ── */
     .score-banner {
         background: linear-gradient(135deg, #7c3aed, #3b82f6, #06b6d4);
@@ -278,6 +294,9 @@ def init_quiz_state():
 if "math_started" not in st.session_state:
     init_quiz_state()
 
+if "player_name" not in st.session_state:
+    st.session_state.player_name = ""
+
 # ══════════════════════════════════════════════════════════════════════════════
 # HEADER
 # ══════════════════════════════════════════════════════════════════════════════
@@ -292,6 +311,14 @@ st.markdown("""
 # START SCREEN
 # ══════════════════════════════════════════════════════════════════════════════
 if not st.session_state.math_started:
+    # Name input
+    st.markdown('<p class="section-label">Your name</p>', unsafe_allow_html=True)
+    name_val = st.text_input(
+        "name", placeholder="e.g. Zayn, Emma, Leo...",
+        label_visibility="collapsed", key="math_name_field"
+    )
+    st.session_state.player_name = name_val.strip()
+
     st.markdown('<p class="section-label">Choose a difficulty level</p>', unsafe_allow_html=True)
 
     lcols = st.columns(3, gap="medium")
@@ -300,15 +327,18 @@ if not st.session_state.math_started:
     for idx, lk in enumerate(levels):
         with lcols[idx]:
             if st.button(lk, key=f"lvl_start_{lk}", use_container_width=True):
-                st.session_state.math_level = lk
-                st.session_state.math_questions = get_math_questions(lk, 10)
-                st.session_state.math_started = True
-                st.session_state.math_current_q = 0
-                st.session_state.math_score = 0
-                st.session_state.math_correct = 0
-                st.session_state.math_answered = False
-                st.session_state.math_done = False
-                st.rerun()
+                if not st.session_state.player_name:
+                    st.warning("Please enter your name first.")
+                else:
+                    st.session_state.math_level = lk
+                    st.session_state.math_questions = get_math_questions(lk, 10)
+                    st.session_state.math_started = True
+                    st.session_state.math_current_q = 0
+                    st.session_state.math_score = 0
+                    st.session_state.math_correct = 0
+                    st.session_state.math_answered = False
+                    st.session_state.math_done = False
+                    st.rerun()
 
     components.html("""
     <script>
@@ -341,18 +371,19 @@ if not st.session_state.math_started:
 # ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.math_done:
     score = st.session_state.math_score
+    name = st.session_state.player_name or "Explorer"
 
     if score == 100:
-        headline = "Perfect score!"
+        headline = f"Perfect score, {name}!"
         msg = "Outstanding performance. You got every single question right."
     elif score >= 70:
-        headline = "Great work!"
+        headline = f"Great work, {name}!"
         msg = "Excellent math skills. Keep practicing to reach a perfect score."
     elif score >= 40:
-        headline = "Good try!"
+        headline = f"Good try, {name}!"
         msg = "You're getting there! A little more practice and you'll be a math whiz."
     else:
-        headline = "Keep practicing!"
+        headline = f"Keep practicing, {name}!"
         msg = "Math can be tricky, but you'll get better every time you try."
 
     st.markdown(f"""
@@ -415,9 +446,12 @@ with c2:
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
+name = st.session_state.player_name or "Explorer"
+level = st.session_state.math_level or "Easy"
+
 # Score banner
 st.markdown(
-    f'<div class="score-banner">Score: <strong>{st.session_state.math_score}</strong></div>',
+    f'<div class="score-banner"><strong>{level}</strong> &nbsp;·&nbsp; {name} &nbsp;·&nbsp; Score: <strong>{st.session_state.math_score}</strong></div>',
     unsafe_allow_html=True
 )
 
@@ -462,9 +496,9 @@ else:
 if st.session_state.math_answered:
     if st.session_state.math_last_correct:
         celebrate(st.session_state.math_correct)
-        st.markdown(f'<div class="feedback-correct">✅ You got it right! Great job!</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="feedback-correct">✅ You got it right! Great job, {name}!</div>', unsafe_allow_html=True)
     else:
-        st.markdown(f'<div class="feedback-wrong">❌ Not quite. The correct answer was <strong>{q_data["answer"]}</strong>. Try the next one!</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="feedback-wrong">❌ Not quite. The correct answer was <strong>{q_data["answer"]}</strong>. Keep trying, {name}!</div>', unsafe_allow_html=True)
 
     st.markdown("<br/>", unsafe_allow_html=True)
     
