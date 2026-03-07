@@ -66,18 +66,18 @@ st.markdown("""
     .stButton > button {
         background: rgba(255,255,255,0.9) !important;
         color: #2d3748 !important;
-        font-size: 1.05rem !important;
+        font-size: 0.95rem !important;
         font-family: 'Inter', sans-serif !important;
         font-weight: 500 !important;
         border: 1.5px solid rgba(139,92,246,0.15) !important;
         border-radius: 14px !important;
-        padding: 18px 16px !important;
-        min-height: 70px !important;
+        padding: 12px 14px !important;
+        min-height: 54px !important;
         width: 100%;
         text-align: center !important;
         transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
         box-shadow: 0 2px 8px rgba(139,92,246,0.06);
-        margin-bottom: 8px;
+        margin-bottom: 2px;
     }
     .stButton > button:hover {
         border-color: #8b5cf6 !important;
@@ -97,8 +97,8 @@ st.markdown("""
         font-weight: 600 !important;
         border: none !important;
         border-radius: 12px !important;
-        padding: 14px 28px !important;
-        font-size: 1rem !important;
+        padding: 12px 24px !important;
+        font-size: 0.95rem !important;
         box-shadow: 0 4px 16px rgba(124,58,237,0.3);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -129,15 +129,15 @@ st.markdown("""
     .score-banner {
         background: linear-gradient(135deg, #7c3aed, #3b82f6, #06b6d4);
         border: none;
-        border-radius: 14px;
-        padding: 14px 24px;
+        border-radius: 12px;
+        padding: 10px 20px;
         text-align: center;
         color: rgba(255,255,255,0.9) !important;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         font-family: 'Inter', sans-serif;
         font-weight: 500;
         box-shadow: 0 4px 16px rgba(124,58,237,0.2);
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
     .score-banner strong { color: #ffffff; }
 
@@ -146,14 +146,14 @@ st.markdown("""
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 16px;
-        padding: 28px 32px;
+        padding: 20px 24px;
         text-align: center;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 600;
         color: #1a202c !important;
         font-family: 'Inter', sans-serif;
         box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     /* ── Progress bar ── */
@@ -166,22 +166,22 @@ st.markdown("""
     .feedback-correct {
         background: #f0fff4;
         border: 1px solid #c6f6d5;
-        border-radius: 14px;
-        padding: 18px 24px;
+        border-radius: 12px;
+        padding: 12px 20px;
         color: #276749 !important;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-family: 'Inter', sans-serif;
-        margin-top: 1rem;
+        margin-top: 0.5rem;
     }
     .feedback-wrong {
         background: #fff5f5;
         border: 1px solid #fed7d7;
-        border-radius: 14px;
-        padding: 18px 24px;
+        border-radius: 12px;
+        padding: 12px 20px;
         color: #9b2c2c !important;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-family: 'Inter', sans-serif;
-        margin-top: 1rem;
+        margin-top: 0.5rem;
     }
     
     /* ── End screen ── */
