@@ -194,17 +194,18 @@ st.markdown("""
         box-shadow: 0 4px 20px rgba(0,0,0,0.06);
         margin: 1rem auto;
         max-width: 480px;
+        color: #1a202c !important;
     }
     .end-headline {
-        font-size: 1.6rem; font-weight: 700; color: #1a202c;
+        font-size: 1.6rem; font-weight: 700; color: #1a202c !important;
         margin-bottom: 8px;
     }
     .end-score {
-        font-size: 2.5rem; font-weight: 700; color: #5a67d8;
+        font-size: 2.5rem; font-weight: 700; color: #5a67d8 !important;
         margin: 12px 0;
     }
     .end-msg {
-        font-size: 1rem; color: #718096; font-weight: 400;
+        font-size: 1rem; color: #718096 !important; font-weight: 400;
         margin-top: 8px;
     }
     

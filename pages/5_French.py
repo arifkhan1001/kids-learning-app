@@ -95,21 +95,24 @@ st.markdown("""
 
     /* ── Primary action buttons ── */
     .nav-btn .stButton > button {
-        background: rgba(255,255,255,0.9) !important;
-        color: #4a5568 !important;
+        background: linear-gradient(135deg, #7c3aed, #6366f1) !important;
+        color: #ffffff !important;
         font-weight: 600 !important;
-        border: 1.5px solid rgba(255,255,255,0.5) !important;
+        border: none !important;
         border-radius: 12px !important;
         padding: 12px 24px !important;
         font-size: 1rem !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 16px rgba(124,58,237,0.3) !important;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         width: 100%;
     }
     .nav-btn .stButton > button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        background: #ffffff !important;
+        box-shadow: 0 8px 24px rgba(124,58,237,0.4) !important;
+        background: linear-gradient(135deg, #6d28d9, #4f46e5) !important;
+    }
+    .nav-btn .stButton > button p {
+        color: #ffffff !important;
     }
     
     .play-btn {
@@ -203,18 +206,92 @@ current_word = words[idx]
 # FLASHCARD
 # ══════════════════════════════════════════════════════════════════════════════
 
-st.markdown(f"""
+# Render the flashcard inside components.html so the JS TTS works seamlessly
+html_code = f"""
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    body {{
+        margin: 0; padding: 0;
+        font-family: 'Inter', sans-serif;
+        background: transparent;
+    }}
+    .flashcard {{
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        padding: 40px 32px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        margin: 0.5rem auto;
+        position: relative;
+        max-width: 480px;
+    }}
+    .emoji-circle {{
+        font-size: 4rem;
+        background: rgba(139,92,246,0.1);
+        width: 120px;
+        height: 120px;
+        line-height: 120px;
+        border-radius: 50%;
+        margin: 0 auto 1.5rem auto;
+        display: flex; align-items: center; justify-content: center;
+    }}
+    .word-fr {{
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #5a67d8 !important;
+        margin-bottom: 0.5rem;
+    }}
+    .word-en {{
+        font-size: 1.2rem;
+        color: #718096 !important;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }}
+    .play-btn {{
+        margin-top: 2rem;
+        display: flex; justify-content: center;
+    }}
+    .play-btn button {{
+        background: linear-gradient(135deg, #7c3aed, #6366f1);
+        color: white; border: none; padding: 12px 32px;
+        border-radius: 999px; font-size: 1.1rem; font-weight: 600;
+        cursor: pointer; display: flex; align-items: center; gap: 8px;
+        box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+        transition: transform 0.2s, box-shadow 0.2s;
+        font-family: 'Inter', sans-serif;
+    }}
+    .play-btn button:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(124,58,237,0.4);
+    }}
+</style>
 <div class="flashcard">
-    <div class="emoji-circle">{current_word['emoji']}</div>
-    <div class="word-fr">{current_word['fr']}</div>
-    <div class="word-en">{current_word['en']}</div>
+    <div class="emoji-circle">{{current_word['emoji']}}</div>
+    <div class="word-fr">{{current_word['fr']}}</div>
+    <div class="word-en">{{current_word['en']}}</div>
     <div class="play-btn">
-        <button onclick="playAudio('{current_word['fr']}')">
+        <button onclick="playAudio()">
             ▶️ Hear it out loud
         </button>
     </div>
 </div>
-""", unsafe_allow_html=True)
+<script>
+    function playAudio() {{
+        if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel();
+            var msg = new SpeechSynthesisUtterance("{current_word['fr'].replace('"', '\\"')}");
+            msg.lang = 'fr-FR';
+            msg.rate = 0.85;
+            window.speechSynthesis.speak(msg);
+        }} else {{
+            alert("Sorry, your browser doesn't support text-to-speech.");
+        }}
+    }}
+</script>
+"""
+components.html(html_code, height=420)
 
 # ── Navigation Buttons ──
 nav1, nav2, nav3 = st.columns([1, 2, 1])
@@ -225,26 +302,10 @@ with nav1:
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 with nav2:
-    st.markdown(f"<div style='text-align:center; padding-top: 14px; color: rgba(255,255,255,0.8); font-size: 0.9rem;'>Word {idx + 1} of {total_words}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center; padding-top: 14px; color: rgba(255,255,255,0.8); font-size: 0.9rem;'>Word {{idx + 1}} of {{total_words}}</div>", unsafe_allow_html=True)
 with nav3:
     st.markdown('<div class="nav-btn">', unsafe_allow_html=True)
     if st.button("Next ➡️", disabled=(idx == total_words - 1), use_container_width=True):
         st.session_state.fr_idx += 1
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
-
-# ── TTS JS Injection ──
-components.html("""
-<script>
-window.parent.playAudio = function(text) {
-    if ('speechSynthesis' in window) {
-        var msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'fr-FR';
-        msg.rate = 0.85; // Slightly slower for kids
-        window.speechSynthesis.speak(msg);
-    } else {
-        alert("Sorry, your browser doesn't support text-to-speech.");
-    }
-};
-</script>
-""", height=0)
